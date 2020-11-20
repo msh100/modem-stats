@@ -12,13 +12,13 @@ while [ true ]; do
     snrmib="${mibbase}.4.${channel}"
     powermib="${mibbase}.6.${channel}"
 
-    if [[ $data  =~ ""$channelmib\":\"([0-9]+)\" ]]; then
+    if [[ $data  =~ ""$channelmib\":\"(-?[0-9]+)\" ]]; then
         channelid=${BASH_REMATCH[1]}
-        [[ $data  =~ ""$frequencymib\":\"([0-9]+)\" ]]
+        [[ $data  =~ ""$frequencymib\":\"(-?[0-9]+)\" ]]
         frequency=${BASH_REMATCH[1]}
-        [[ $data  =~ ""$snrmib\":\"([0-9]+)\" ]]
+        [[ $data  =~ ""$snrmib\":\"(-?[0-9]+)\" ]]
         snr=${BASH_REMATCH[1]}
-        [[ $data  =~ ""$powermib\":\"([0-9]+)\" ]]
+        [[ $data  =~ ""$powermib\":\"(-?[0-9]+)\" ]]
         power=${BASH_REMATCH[1]}
 
         echo "downstream,channel=${channel},id=${channelid} frequency=${frequency},snr=${snr},power=${power}"
@@ -38,11 +38,11 @@ while [ true ]; do
     frequencymib="${mibbase}.2.${channel}"
     powermib="${powerbase}.${channel}"
 
-    if [[ $data  =~ ""$channelmib\":\"([0-9]+)\" ]]; then
+    if [[ $data  =~ ""$channelmib\":\"(-?[0-9]+)\" ]]; then
         channelid=${BASH_REMATCH[1]}
-        [[ $data  =~ ""$frequencymib\":\"([0-9]+)\" ]]
+        [[ $data  =~ ""$frequencymib\":\"(-?[0-9]+)\" ]]
         frequency=${BASH_REMATCH[1]}
-        [[ $data  =~ ""$powermib\":\"([0-9]+)\" ]]
+        [[ $data  =~ ""$powermib\":\"(-?[0-9]+)\" ]]
         power=${BASH_REMATCH[1]}
 
         echo "upstream,channel=${channel},id=${channelid} frequency=${frequency},power=${power}"
