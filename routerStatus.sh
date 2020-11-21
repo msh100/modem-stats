@@ -5,11 +5,12 @@ data=$(curl --silent http://${ROUTER_IP:-192.168.100.1}/getRouterStatus)
 
 # Downstream Channels
 mibbase="1.3.6.1.2.1.10.127.1.1.1.1"
+snrbase="1.3.6.1.2.1.10.127.1.1.4.1.5"
 channel=1
 while [ true ]; do
     channelmib="${mibbase}.1.${channel}"
     frequencymib="${mibbase}.2.${channel}"
-    snrmib="${mibbase}.4.${channel}"
+    snrmib="${snrbase}.${channel}"
     powermib="${mibbase}.6.${channel}"
 
     if [[ $data  =~ ""$channelmib\":\"(-?[0-9]+)\" ]]; then
