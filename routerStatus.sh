@@ -72,3 +72,31 @@ while [ true ]; do
 
     channel=$((channel+1))
 done
+
+# Determine config
+upstreamid="1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.1."
+downstreamid="1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.2."
+ratemib="1.3.6.1.4.1.4491.2.1.21.1.2.1.6.2.1"
+burstmib="1.3.6.1.4.1.4491.2.1.21.1.2.1.7.2.1"
+
+if [[ $data  =~ \"$upstreamid([0-9]+)\":\"1\" ]]; then
+    upstreamid=${BASH_REMATCH[1]}
+
+    [[ $data  =~ \"$ratemib.$upstreamid\":\"([0-9]+)\" ]]
+    maxrate=${BASH_REMATCH[1]}
+    [[ $data  =~ \"$burstmib.$upstreamid\":\"([0-9]+)\" ]]
+    maxburst=${BASH_REMATCH[1]}
+
+    echo "config,config=upstream maxrate=${maxrate},maxburst=${maxburst}"
+fi
+
+if [[ $data  =~ \"$downstreamid([0-9]+)\":\"1\" ]]; then
+    downstreamid=${BASH_REMATCH[1]}
+
+    [[ $data  =~ \"$ratemib.$downstreamid\":\"([0-9]+)\" ]]
+    maxrate=${BASH_REMATCH[1]}
+    [[ $data  =~ \"$burstmib.$downstreamid\":\"([0-9]+)\" ]]
+    maxburst=${BASH_REMATCH[1]}
+
+    echo "config,config=downstream maxrate=${maxrate},maxburst=${maxburst}"
+fi
