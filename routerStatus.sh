@@ -1,24 +1,43 @@
 #!/bin/bash
 # Take the router status from VM and produce a influx friendly version
 
-data=$(curl --silent http://${ROUTER_IP:-192.168.100.1}/getRouterStatus)
+data=$(curl --silent "http://${ROUTER_IP:-192.168.100.1}/getRouterStatus")
 
-# Downstream Channels
-mibbase="1.3.6.1.2.1.10.127.1.1.1.1"
+function contains() {
+    local n=$#
+    local value=${!n}
+    for ((i=1;i < $#;i++)) {
+        if [ "${!i}" == "${value}" ]; then
+            return 0
+        fi
+    }
+    return 1
+}
+
+# Active bonded channels
+channelmib="1.3.6.1.4.1.4115.1.3.4.1.1.12.0"
+[[ $data  =~ \"$channelmib\":\"([0-9,]+)\" ]]
+IFS=', ' read -r -a activechannels <<< "${BASH_REMATCH[1]}"
+
+downmibbase="1.3.6.1.2.1.10.127.1.1.1.1"
+upmibbase="1.3.6.1.2.1.10.127.1.1.2.1"
 snrbase="1.3.6.1.2.1.10.127.1.1.4.1.5"
 bondbase="1.3.6.1.2.1.10.127.1.1.4.1"
+powerbase="1.3.6.1.4.1.4491.2.1.20.1.2.1.1"
+downchannels=()
 
-channel=1
-while [ true ]; do
-    channelmib="${mibbase}.1.${channel}"
-    frequencymib="${mibbase}.2.${channel}"
-    snrmib="${snrbase}.${channel}"
-    powermib="${mibbase}.6.${channel}"
-    prerserrmib="${bondbase}.3.${channel}"
-    postrserrmib="${bondbase}.4.${channel}"
+for channelid in "${activechannels[@]}"; do
+    # Downstream channels
+    if [[ $data  =~ \"$downmibbase.1.([0-9]+)\":\"$channelid\" ]] && \
+       ! contains "${downchannels[@]}" "${BASH_REMATCH[1]}"; then
+        channel=${BASH_REMATCH[1]}
+        frequencymib="${downmibbase}.2.${channel}"
+        snrmib="${snrbase}.${channel}"
+        powermib="${downmibbase}.6.${channel}"
+        prerserrmib="${bondbase}.3.${channel}"
+        postrserrmib="${bondbase}.4.${channel}"
+        downchannels+=("${channel}")
 
-    if [[ $data  =~ \"$channelmib\":\"(-?[0-9]+)\" ]]; then
-        channelid=${BASH_REMATCH[1]}
         [[ $data  =~ \"$frequencymib\":\"(-?[0-9]+)\" ]]
         frequency=${BASH_REMATCH[1]}
         [[ $data  =~ \"$snrmib\":\"(-?[0-9]+)\" ]]
@@ -38,24 +57,12 @@ while [ true ]; do
             "prerserr=${prerserr}" \
             "postrserr=${postrserr}" \
             | tr ' ' ','
-    else
-        break
-    fi
+    # Upstream channels
+    elif [[ $data  =~ \"$upmibbase.1.([0-9]+)\":\"$channelid\" ]]; then
+        channel=${BASH_REMATCH[1]}
+        frequencymib="${upmibbase}.2.${channel}"
+        powermib="${powerbase}.${channel}"
 
-    channel=$((channel+1))
-done
-
-# Upstream Channels
-mibbase="1.3.6.1.2.1.10.127.1.1.2.1"
-powerbase="1.3.6.1.4.1.4491.2.1.20.1.2.1.1"
-channel=1
-while [ true ]; do
-    channelmib="${mibbase}.1.${channel}"
-    frequencymib="${mibbase}.2.${channel}"
-    powermib="${powerbase}.${channel}"
-
-    if [[ $data  =~ \"$channelmib\":\"(-?[0-9]+)\" ]]; then
-        channelid=${BASH_REMATCH[1]}
         [[ $data  =~ \"$frequencymib\":\"(-?[0-9]+)\" ]]
         frequency=${BASH_REMATCH[1]}
         [[ $data  =~ \"$powermib\":\"(-?[0-9]+)\" ]]
@@ -66,11 +73,7 @@ while [ true ]; do
             "frequency=${frequency}" \
             "power=${power}" \
             | tr ' ' ','
-    else
-        break
     fi
-
-    channel=$((channel+1))
 done
 
 # Determine config
