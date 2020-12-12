@@ -1,7 +1,9 @@
 #!/bin/bash
 # Take the router status from VM and produce a influx friendly version
 
+PRETIME=$(date +%s%N | cut -b1-13)
 DATA=$(curl --silent "http://${ROUTER_IP:-192.168.100.1}/getRouterStatus")
+STATSTIMER="$(($(date +%s%N | cut -b1-13) - ${PRETIME}))"
 
 function contains() {
     local n=$#
@@ -85,3 +87,5 @@ if [[ "${DATA}" =~ \"$downstreamid([0-9]+)\":\"1\" ]]; then
         "maxrate=$(read_mib "${ratemib}.${downstreamid}")" \
         "maxburst=$(read_mib "${burstmib}.${downstreamid}")"
 fi
+
+echo "shstatsinfo timems=${STATSTIMER}"
