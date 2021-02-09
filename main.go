@@ -12,19 +12,19 @@ import (
 )
 
 type downChannel struct {
-	channel_id int
-	channel    int
-	frequency  int
-	snr        int
-	power      int
-	prerserr   int
-	postrserr  int
+	channelID int
+	channel   int
+	frequency int
+	snr       int
+	power     int
+	prerserr  int
+	postrserr int
 }
 type upChannel struct {
-	channel_id int
-	channel    int
-	frequency  int
-	power      int
+	channelID int
+	channel   int
+	frequency int
+	power     int
 }
 type config struct {
 	config   string
@@ -67,10 +67,10 @@ func main() {
 	bondBase := "1.3.6.1.2.1.10.127.1.1.4.1"
 	powerBase := "1.3.6.1.4.1.4491.2.1.20.1.2.1.1"
 
-	upstreamIdMIBRegex := "^1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.1.([0-9]+)$"
-	upstreamIdMIB := regexp.MustCompile(upstreamIdMIBRegex)
-	downstreamIdMIBRegex := "^1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.2.([0-9]+)$"
-	downstreamIdMIB := regexp.MustCompile(downstreamIdMIBRegex)
+	upstreamIDMIBRegex := "^1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.[0-9]*[13579].([0-9]+)$"
+	upstreamIDMIB := regexp.MustCompile(upstreamIDMIBRegex)
+	downstreamIDMIBRegex := "^1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.[0-9]*[02468].([0-9]+)$"
+	downstreamIDMIB := regexp.MustCompile(downstreamIDMIBRegex)
 
 	rateMIB := "1.3.6.1.4.1.4491.2.1.21.1.2.1.6.2.1"
 	burstMIB := "1.3.6.1.4.1.4491.2.1.21.1.2.1.7.2.1"
@@ -107,13 +107,13 @@ func main() {
 			postRSErr, _ := strconv.Atoi(snmpData[postRSErrMIB].(string))
 
 			downChannels = append(downChannels, downChannel{
-				channel_id: channelID,
-				channel:    channel,
-				frequency:  frequency,
-				snr:        snr,
-				power:      power,
-				prerserr:   preRSErr,
-				postrserr:  postRSErr,
+				channelID: channelID,
+				channel:   channel,
+				frequency: frequency,
+				snr:       snr,
+				power:     power,
+				prerserr:  preRSErr,
+				postrserr: postRSErr,
 			})
 			continue
 		}
@@ -131,10 +131,10 @@ func main() {
 			power, _ := strconv.Atoi(snmpData[powerMIB].(string))
 
 			upChannels = append(upChannels, upChannel{
-				channel_id: channelID,
-				channel:    channel,
-				frequency:  frequency,
-				power:      power,
+				channelID: channelID,
+				channel:   channel,
+				frequency: frequency,
+				power:     power,
 			})
 			continue
 		}
@@ -142,14 +142,14 @@ func main() {
 		// Active profile value needs to be set to 1, we don't need to run
 		// this logic on every single iteration of SNMP data
 		if MIBValue == "1" {
-			upstreamIDMatch := upstreamIdMIB.FindStringSubmatch(MIB)
+			upstreamIDMatch := upstreamIDMIB.FindStringSubmatch(MIB)
 			if len(upstreamIDMatch) > 0 {
-				upstreamId := upstreamIDMatch[1]
+				upstreamID := upstreamIDMatch[1]
 
-				maxRateMIB := fmt.Sprintf("%s.%s", rateMIB, upstreamId)
+				maxRateMIB := fmt.Sprintf("%s.%s", rateMIB, upstreamID)
 				maxRate, _ := strconv.Atoi(snmpData[maxRateMIB].(string))
 
-				maxBurstMIB := fmt.Sprintf("%s.%s", burstMIB, upstreamId)
+				maxBurstMIB := fmt.Sprintf("%s.%s", burstMIB, upstreamID)
 				maxBurst, _ := strconv.Atoi(snmpData[maxBurstMIB].(string))
 
 				configs = append(configs, config{
@@ -160,14 +160,14 @@ func main() {
 				continue
 			}
 
-			downstreamIDMatch := downstreamIdMIB.FindStringSubmatch(MIB)
+			downstreamIDMatch := downstreamIDMIB.FindStringSubmatch(MIB)
 			if len(downstreamIDMatch) > 0 {
-				upstreamId := downstreamIDMatch[1]
+				downstreamID := downstreamIDMatch[1]
 
-				maxRateMIB := fmt.Sprintf("%s.%s", rateMIB, upstreamId)
+				maxRateMIB := fmt.Sprintf("%s.%s", rateMIB, downstreamID)
 				maxRate, _ := strconv.Atoi(snmpData[maxRateMIB].(string))
 
-				maxBurstMIB := fmt.Sprintf("%s.%s", burstMIB, upstreamId)
+				maxBurstMIB := fmt.Sprintf("%s.%s", burstMIB, downstreamID)
 				maxBurst, _ := strconv.Atoi(snmpData[maxBurstMIB].(string))
 
 				configs = append(configs, config{
@@ -184,7 +184,7 @@ func main() {
 		output := fmt.Sprintf(
 			"downstream,channel=%d,id=%d frequency=%d,snr=%d,power=%d,prerserr=%d,postrserr=%d",
 			downChannel.channel,
-			downChannel.channel_id,
+			downChannel.channelID,
 			downChannel.frequency,
 			downChannel.snr,
 			downChannel.power,
@@ -197,7 +197,7 @@ func main() {
 		output := fmt.Sprintf(
 			"upstream,channel=%d,id=%d frequency=%d,power=%d",
 			upChannel.channel,
-			upChannel.channel_id,
+			upChannel.channelID,
 			upChannel.frequency,
 			upChannel.power,
 		)
