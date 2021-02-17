@@ -65,6 +65,7 @@ func parseStats3(body []byte) (routerStats, error) {
 				prerserr:   preRSErr,
 				postrserr:  postRSErr,
 				modulation: "QAM256",
+				scheme:     "SC-QAM",
 			})
 			continue
 		}

@@ -43,6 +43,12 @@ func parseStats4(body []byte) (routerStats, error) {
 		prerserr, _ := strconv.Atoi(downChannelData[7])
 		postrserr, _ := strconv.Atoi(downChannelData[8])
 
+		if channelID < 1 || channelID > 1024 {
+			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
 		downChannels = append(downChannels, downChannel{
 			channelID:  channelID,
 			channel:    index + 1,
@@ -51,7 +57,8 @@ func parseStats4(body []byte) (routerStats, error) {
 			power:      powerint,
 			prerserr:   prerserr,
 			postrserr:  postrserr,
-			modulation: "QAM256",
+			modulation: downChannelData[4],
+			scheme:     "SC-QAM",
 		})
 	}
 
@@ -73,6 +80,12 @@ func parseStats4(body []byte) (routerStats, error) {
 		prerserr, _ := strconv.Atoi(down31ChannelData[9])
 		postrserr, _ := strconv.Atoi(down31ChannelData[10])
 
+		if channelID < 1 || channelID > 1024 {
+			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
 		downChannels = append(downChannels, downChannel{
 			channelID:  channelID,
 			channel:    index + 1,
@@ -81,7 +94,8 @@ func parseStats4(body []byte) (routerStats, error) {
 			power:      powerint,
 			prerserr:   prerserr,
 			postrserr:  postrserr,
-			modulation: "QAM4096",
+			modulation: down31ChannelData[4],
+			scheme:     "OFDM",
 		})
 	}
 
@@ -99,6 +113,12 @@ func parseStats4(body []byte) (routerStats, error) {
 		frequency, _ := strconv.Atoi(upChannelData[1])
 		power, _ := strconv.ParseFloat(upChannelData[2], 64)
 		powerint := int(power * 10)
+
+		if channelID < 1 || channelID > 1024 {
+			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
 
 		upChannels = append(upChannels, upChannel{
 			channelID: channelID,

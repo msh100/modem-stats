@@ -9,6 +9,7 @@ type downChannel struct {
 	prerserr   int
 	postrserr  int
 	modulation string
+	scheme     string
 }
 type upChannel struct {
 	channelID int
