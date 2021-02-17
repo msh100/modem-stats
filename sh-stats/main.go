@@ -57,9 +57,10 @@ func main() {
 
 	for _, downChannel := range routerStats.downChannels {
 		output := fmt.Sprintf(
-			"downstream,channel=%d,id=%d frequency=%d,snr=%d,power=%d,prerserr=%d,postrserr=%d",
+			"downstream,channel=%d,id=%d,modulation=%s frequency=%d,snr=%d,power=%d,prerserr=%d,postrserr=%d",
 			downChannel.channel,
 			downChannel.channelID,
+			downChannel.modulation,
 			downChannel.frequency,
 			downChannel.snr,
 			downChannel.power,

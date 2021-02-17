@@ -1,13 +1,14 @@
 package main
 
 type downChannel struct {
-	channelID int
-	channel   int
-	frequency int
-	snr       int
-	power     int
-	prerserr  int
-	postrserr int
+	channelID  int
+	channel    int
+	frequency  int
+	snr        int
+	power      int
+	prerserr   int
+	postrserr  int
+	modulation string
 }
 type upChannel struct {
 	channelID int

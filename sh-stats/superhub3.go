@@ -57,13 +57,14 @@ func parseStats3(body []byte) (routerStats, error) {
 			postRSErr, _ := strconv.Atoi(snmpData[postRSErrMIB].(string))
 
 			downChannels = append(downChannels, downChannel{
-				channelID: channelID,
-				channel:   channel,
-				frequency: frequency,
-				snr:       snr,
-				power:     power,
-				prerserr:  preRSErr,
-				postrserr: postRSErr,
+				channelID:  channelID,
+				channel:    channel,
+				frequency:  frequency,
+				snr:        snr,
+				power:      power,
+				prerserr:   preRSErr,
+				postrserr:  postRSErr,
+				modulation: "QAM256",
 			})
 			continue
 		}

@@ -44,13 +44,14 @@ func parseStats4(body []byte) (routerStats, error) {
 		postrserr, _ := strconv.Atoi(downChannelData[8])
 
 		downChannels = append(downChannels, downChannel{
-			channelID: channelID,
-			channel:   index + 1,
-			frequency: frequency,
-			snr:       snrint,
-			power:     powerint,
-			prerserr:  prerserr,
-			postrserr: postrserr,
+			channelID:  channelID,
+			channel:    index + 1,
+			frequency:  frequency,
+			snr:        snrint,
+			power:      powerint,
+			prerserr:   prerserr,
+			postrserr:  postrserr,
+			modulation: "QAM256",
 		})
 	}
 
@@ -73,13 +74,14 @@ func parseStats4(body []byte) (routerStats, error) {
 		postrserr, _ := strconv.Atoi(down31ChannelData[10])
 
 		downChannels = append(downChannels, downChannel{
-			channelID: channelID,
-			channel:   index + 1,
-			frequency: frequency,
-			snr:       snrint,
-			power:     powerint,
-			prerserr:  prerserr,
-			postrserr: postrserr,
+			channelID:  channelID,
+			channel:    index + 1,
+			frequency:  frequency,
+			snr:        snrint,
+			power:      powerint,
+			prerserr:   prerserr,
+			postrserr:  postrserr,
+			modulation: "QAM4096",
 		})
 	}
 
