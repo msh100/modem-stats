@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func parseStats3(body []byte) routerStats {
+func parseStats3(body []byte) (routerStats, error) {
 	var snmpData map[string]interface{}
 	json.Unmarshal(body, &snmpData)
 
@@ -134,7 +134,7 @@ func parseStats3(body []byte) routerStats {
 		configs:      configs,
 		upChannels:   upChannels,
 		downChannels: downChannels,
-	}
+	}, nil
 }
 
 func requestURL3(ip string) string {

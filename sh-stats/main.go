@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -42,10 +43,16 @@ func main() {
 	timeTotal := (time.Now().UnixNano() / int64(time.Millisecond)) - timeStart
 
 	var routerStats routerStats
+	var err error
 	if SHVersion == "4" {
-		routerStats = parseStats4(body)
+		routerStats, err = parseStats4(body)
 	} else {
-		routerStats = parseStats3(body)
+		routerStats, err = parseStats3(body)
+	}
+
+	if err != nil {
+		log.Printf("Error returned by parser: %v", err)
+		os.Exit(1)
 	}
 
 	for _, downChannel := range routerStats.downChannels {

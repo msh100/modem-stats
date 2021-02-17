@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 )
 
-func parseStats4(body []byte) routerStats {
+func parseStats4(body []byte) (routerStats, error) {
 	var arr []string
 	json.Unmarshal([]byte(body), &arr)
 
@@ -14,6 +15,10 @@ func parseStats4(body []byte) routerStats {
 	downBurst, _ := strconv.Atoi(arr[12])
 	upRate, _ := strconv.Atoi(arr[15])
 	upBurst, _ := strconv.Atoi(arr[16])
+
+	if downRate == 0 {
+		return routerStats{}, errors.New("Faulty input, values are blank")
+	}
 
 	var downChannelsData [][]string
 	json.Unmarshal([]byte(arr[20]), &downChannelsData)
@@ -94,7 +99,7 @@ func parseStats4(body []byte) routerStats {
 		},
 		upChannels:   upChannels,
 		downChannels: downChannels,
-	}
+	}, nil
 }
 
 func requestURL4(ip string) string {
