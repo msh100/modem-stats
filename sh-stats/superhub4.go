@@ -5,9 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func parseStats4(body []byte) (routerStats, error) {
+	var errstrings []string
+
 	var arr []string
 	json.Unmarshal([]byte(body), &arr)
 
@@ -16,14 +19,21 @@ func parseStats4(body []byte) (routerStats, error) {
 	upRate, _ := strconv.Atoi(arr[15])
 	upBurst, _ := strconv.Atoi(arr[16])
 
-	if downRate == 0 {
-		return routerStats{}, errors.New("Faulty input, values are blank")
+	if downRate == 0 || downBurst == 0 || upRate == 0 || upBurst == 0 {
+		error := fmt.Errorf("Got nil values for speed config %d,%d,%d,%d", downRate, downBurst, upRate, upBurst)
+		errstrings = append(errstrings, error.Error())
 	}
 
 	var downChannelsData [][]string
 	json.Unmarshal([]byte(arr[20]), &downChannelsData)
 	var downChannels []downChannel
 	for index, downChannelData := range downChannelsData {
+		if len(downChannelData) != 9 {
+			error := fmt.Errorf("Abnormal down channel length, expected 9, got %d", len(downChannelData))
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
 		channelID, _ := strconv.Atoi(downChannelData[0])
 		frequency, _ := strconv.Atoi(downChannelData[1])
 		snr, _ := strconv.ParseFloat(downChannelData[3], 64)
@@ -39,14 +49,20 @@ func parseStats4(body []byte) (routerStats, error) {
 			frequency: frequency,
 			snr:       snrint,
 			power:     powerint,
-			prerserr:  prerserr,  // TODO: Verify?
-			postrserr: postrserr, // TODO: Verify?
+			prerserr:  prerserr,
+			postrserr: postrserr,
 		})
 	}
 
 	var down31ChannelsData [][]string
 	json.Unmarshal([]byte(arr[23]), &down31ChannelsData)
 	for index, down31ChannelData := range down31ChannelsData {
+		if len(down31ChannelData) != 11 {
+			error := fmt.Errorf("Abnormal 3.1 down channel length, expected 11, got %d", len(down31ChannelData))
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
 		channelID, _ := strconv.Atoi(down31ChannelData[0])
 		frequency, _ := strconv.Atoi(down31ChannelData[1] + "000000")
 		snr, _ := strconv.ParseFloat(down31ChannelData[7], 64)
@@ -71,6 +87,12 @@ func parseStats4(body []byte) (routerStats, error) {
 	json.Unmarshal([]byte(arr[21]), &upChannelsData)
 	var upChannels []upChannel
 	for index, upChannelData := range upChannelsData {
+		if len(upChannelData) != 10 {
+			error := fmt.Errorf("Abnormal up channel length, expected 10, got %d", len(upChannelData))
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
 		channelID, _ := strconv.Atoi(upChannelData[0])
 		frequency, _ := strconv.Atoi(upChannelData[1])
 		power, _ := strconv.ParseFloat(upChannelData[2], 64)
@@ -82,6 +104,12 @@ func parseStats4(body []byte) (routerStats, error) {
 			frequency: frequency,
 			power:     powerint,
 		})
+	}
+
+	var returnerr error
+	returnerr = nil
+	if len(errstrings) > 0 {
+		returnerr = errors.New(strings.Join(errstrings, "\n"))
 	}
 
 	return routerStats{
@@ -99,7 +127,7 @@ func parseStats4(body []byte) (routerStats, error) {
 		},
 		upChannels:   upChannels,
 		downChannels: downChannels,
-	}, nil
+	}, returnerr
 }
 
 func requestURL4(ip string) string {
