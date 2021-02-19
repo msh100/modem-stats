@@ -48,6 +48,11 @@ func parseStats4(body []byte) (routerStats, error) {
 			errstrings = append(errstrings, error.Error())
 			break
 		}
+		if powerint > 2000 || powerint < -2000 {
+			error := fmt.Errorf("Power level for 3.0 channel %d is abnormal, got %d", channelID, powerint)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
 
 		downChannels = append(downChannels, downChannel{
 			channelID:  channelID,
@@ -85,6 +90,11 @@ func parseStats4(body []byte) (routerStats, error) {
 			errstrings = append(errstrings, error.Error())
 			break
 		}
+		if powerint > 2000 || powerint < -2000 {
+			error := fmt.Errorf("Power level for 3.1 channel %d is abnormal, got %d", channelID, powerint)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
 
 		downChannels = append(downChannels, downChannel{
 			channelID:  channelID,
@@ -116,6 +126,11 @@ func parseStats4(body []byte) (routerStats, error) {
 
 		if channelID < 1 || channelID > 1024 {
 			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+		if powerint > 2000 || powerint < -2000 {
+			error := fmt.Errorf("Power level for up channel %d is abnormal, got %d", channelID, powerint)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
