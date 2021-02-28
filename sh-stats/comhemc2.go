@@ -25,15 +25,15 @@ type sagemClient struct {
 	username string
 	password string
 
-	currentNonce string
+	currentNonce int
 	serverNonce  string
 	sessionID    int
 	requestID    int
 }
 
-func (sagemClient *sagemClient) apiRequest(actions string) []byte {
+func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	sagemClient.requestID = sagemClient.requestID + 1
-	sagemClient.currentNonce = fmt.Sprintf("%d", (randomInt(10000, 50000)))
+	sagemClient.currentNonce = randomInt(10000, 50000)
 
 	credentialHash := fmt.Sprintf("%s:%s:%s",
 		sagemClient.username,
@@ -42,7 +42,7 @@ func (sagemClient *sagemClient) apiRequest(actions string) []byte {
 	)
 
 	authKey := stringToMD5(
-		fmt.Sprintf("%s:%d:%s:JSON:/cgi/json-req",
+		fmt.Sprintf("%s:%d:%d:JSON:/cgi/json-req",
 			stringToMD5(credentialHash),
 			sagemClient.requestID,
 			sagemClient.currentNonce,
@@ -58,39 +58,32 @@ func (sagemClient *sagemClient) apiRequest(actions string) []byte {
 	payloadObj.Set(sagemClient.sessionID, "request", "session-id")
 	payloadObj.Set("False", "request", "priority")
 	payloadObj.Set(actionsObj, "request", "actions")
-	payloadObj.Set(sagemClient.currentNonce, "request", "cnonce")
+	if sagemClient.currentNonce > 0 {
+		payloadObj.Set(fmt.Sprintf("%d", sagemClient.currentNonce), "request", "cnonce")
+	}
 	payloadObj.Set(authKey, "request", "auth-key")
-
 	jsonPayload := []byte(fmt.Sprintf("req=%s", payloadObj.String()))
 
 	req, err := http.NewRequest("POST", APIAddress, bytes.NewBuffer(jsonPayload))
-
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	// Set the server Nonce and session ID from the return values if they're defined
 	returnValue, _ := gabs.ParseJSON(body)
-	returnID := fmt.Sprintf(
-		"%s",
-		returnValue.Path("reply.actions.0.callbacks.0.parameters.id").String(),
-	)
-	returnNonce := fmt.Sprintf(
-		"%s",
-		returnValue.Path("reply.actions.0.callbacks.0.parameters.nonce").String(),
-	)
+	returnID := returnValue.Path("reply.actions.0.callbacks.0.parameters.id").String()
+	returnNonce := returnValue.Path("reply.actions.0.callbacks.0.parameters.nonce").String()
 
 	if returnID != "null" && returnNonce != "null" {
 		sagemClient.sessionID, _ = strconv.Atoi(returnID)
 		sagemClient.serverNonce = strings.ReplaceAll(returnNonce, "\"", "")
-
 	}
 
-	return body
+	return body, nil
 }
 
 func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
@@ -101,17 +94,23 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 			host:         comhemc2.IPAddress,
 			username:     comhemc2.username,
 			password:     comhemc2.password,
-			currentNonce: "",
+			currentNonce: 0,
 			sessionID:    0,
 			requestID:    -1,
 		}
 
 		loginRequest := `[{"method":"logIn","parameters":{"user":"%s","persistent":"true","session-options":{"nss":[{"name":"gtw","uri":"http://sagemcom.com/gateway-data"}],"language":"ident","context-flags":{"get-content-name":true,"local-time":true},"capability-depth":2,"capability-flags":{"name":true,"default-value":false,"restriction":true,"description":false},"time-format":"ISO_8601","write-only-string":"_XMO_WRITE_ONLY_","undefined-write-only-string":"_XMO_UNDEFINED_WRITE_ONLY_"}}}]`
-		sagemClient.apiRequest(fmt.Sprintf(loginRequest, sagemClient.username))
+		_, err := sagemClient.apiRequest(fmt.Sprintf(loginRequest, sagemClient.username))
+		if err != nil {
+			return routerStats{}, err
+		}
 
 		channelsXpath := `[{"id":0,"method":"getValue","xpath":"%s","options":{}},{"id":1,"method":"getValue","xpath":"%s","options":{}}]`
 		channelsXpath = fmt.Sprintf(channelsXpath, "Device/Docsis/CableModem/Upstreams", "Device/Docsis/CableModem/Downstreams")
-		channelDataReq := sagemClient.apiRequest(channelsXpath)
+		channelDataReq, err := sagemClient.apiRequest(channelsXpath)
+		if err != nil {
+			return routerStats{}, err
+		}
 
 		fetchTime := (time.Now().UnixNano() / int64(time.Millisecond)) - timeStart
 
@@ -124,7 +123,7 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 
 	jsonParsed, err := gabs.ParseJSON(comhemc2.stats)
 	if err != nil {
-		fmt.Println(err)
+		return routerStats{}, err
 	}
 
 	reply := jsonParsed.Path("reply")
