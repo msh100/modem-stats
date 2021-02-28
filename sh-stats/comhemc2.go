@@ -20,10 +20,6 @@ type comhemc2 struct {
 	password  string
 }
 
-func (comhemc2 comhemc2) fetchURL() string {
-	return fmt.Sprintf("http://%s/0.1/gui/#/internetConnectivity/docsis/rf-parameters", comhemc2.IPAddress)
-}
-
 type sagemClient struct {
 	host     string
 	username string
