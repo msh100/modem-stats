@@ -27,4 +27,9 @@ type routerStats struct {
 	configs      []config
 	upChannels   []upChannel
 	downChannels []downChannel
+	fetchTime    int64
+}
+
+type router interface {
+	ParseStats() (routerStats, error)
 }

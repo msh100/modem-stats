@@ -7,9 +7,27 @@ import (
 	"strconv"
 )
 
-func parseStats3(body []byte) (routerStats, error) {
+type superhub3 struct {
+	IPAddress string
+	stats     []byte
+	fetchTime int64
+}
+
+func (sh3 superhub3) fetchURL() string {
+	return fmt.Sprintf("http://%s/getRouterStatus", sh3.IPAddress)
+}
+
+func (sh3 superhub3) ParseStats() (routerStats, error) {
+	if sh3.stats == nil {
+		var err error
+		sh3.stats, sh3.fetchTime, err = simpleHTTPFetch(sh3.fetchURL())
+		if err != nil {
+			return routerStats{}, err
+		}
+	}
+
 	var snmpData map[string]interface{}
-	json.Unmarshal(body, &snmpData)
+	json.Unmarshal(sh3.stats, &snmpData)
 
 	downMIBBase := "1.3.6.1.2.1.10.127.1.1.1.1"
 	upMIBBase := "1.3.6.1.2.1.10.127.1.1.2.1"
@@ -136,9 +154,6 @@ func parseStats3(body []byte) (routerStats, error) {
 		configs:      configs,
 		upChannels:   upChannels,
 		downChannels: downChannels,
+		fetchTime:    sh3.fetchTime,
 	}, nil
-}
-
-func requestURL3(ip string) string {
-	return fmt.Sprintf("http://%s/getRouterStatus", ip)
 }

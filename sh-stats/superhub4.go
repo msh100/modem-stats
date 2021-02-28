@@ -8,11 +8,29 @@ import (
 	"strings"
 )
 
-func parseStats4(body []byte) (routerStats, error) {
+type superhub4 struct {
+	IPAddress string
+	stats     []byte
+	fetchTime int64
+}
+
+func (sh4 superhub4) fetchURL() string {
+	return fmt.Sprintf("http://%s/php/ajaxGet_device_networkstatus_data.php", sh4.IPAddress)
+}
+
+func (sh4 superhub4) ParseStats() (routerStats, error) {
+	if sh4.stats == nil {
+		var err error
+		sh4.stats, sh4.fetchTime, err = simpleHTTPFetch(sh4.fetchURL())
+		if err != nil {
+			return routerStats{}, err
+		}
+	}
+
 	var errstrings []string
 
 	var arr []string
-	json.Unmarshal([]byte(body), &arr)
+	json.Unmarshal([]byte(sh4.stats), &arr)
 
 	downRate, _ := strconv.Atoi(arr[11])
 	downBurst, _ := strconv.Atoi(arr[12])
@@ -165,8 +183,4 @@ func parseStats4(body []byte) (routerStats, error) {
 		upChannels:   upChannels,
 		downChannels: downChannels,
 	}, returnerr
-}
-
-func requestURL4(ip string) string {
-	return fmt.Sprintf("http://%s/php/ajaxGet_device_networkstatus_data.php", ip)
 }
