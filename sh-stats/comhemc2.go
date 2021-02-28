@@ -153,7 +153,8 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 				channelID, _ := strconv.Atoi(channelData.Path("ChannelID").String())
 				channel, _ := strconv.Atoi(channelData.Path("uid").String())
 				frequency, _ := strconv.Atoi(channelData.Path("Frequency").String())
-				snr, _ := strconv.Atoi(channelData.Path("SNR").String())
+				snr, _ := strconv.ParseFloat(channelData.Path("SNR").String(), 64)
+				snrInt := int(snr * 10)
 				power, _ := strconv.ParseFloat(channelData.Path("PowerLevel").String(), 64)
 				powerInt := int(power * 10)
 				prerserr, _ := strconv.Atoi(channelData.Path("CorrectableCodewords").String())
@@ -171,7 +172,7 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 					channelID:  channelID,
 					channel:    channel,
 					frequency:  frequency,
-					snr:        snr,
+					snr:        snrInt,
 					power:      powerInt,
 					prerserr:   prerserr,
 					postrserr:  postrserr,
