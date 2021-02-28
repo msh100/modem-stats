@@ -13,11 +13,11 @@ type superhub3 struct {
 	fetchTime int64
 }
 
-func (sh3 superhub3) fetchURL() string {
+func (sh3 *superhub3) fetchURL() string {
 	return fmt.Sprintf("http://%s/getRouterStatus", sh3.IPAddress)
 }
 
-func (sh3 superhub3) ParseStats() (routerStats, error) {
+func (sh3 *superhub3) ParseStats() (routerStats, error) {
 	if sh3.stats == nil {
 		var err error
 		sh3.stats, sh3.fetchTime, err = simpleHTTPFetch(sh3.fetchURL())

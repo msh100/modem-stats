@@ -30,13 +30,21 @@ func main() {
 
 	switch routerType {
 	case "superhub4":
-		router = superhub4{
+		router = &superhub4{
 			IPAddress: getenv("ROUTER_IP", "192.168.100.1"),
 			stats:     body,
 			fetchTime: fetchTime,
 		}
+	case "comhemc2":
+		router = &comhemc2{
+			IPAddress: getenv("ROUTER_IP", "192.168.10.1"),
+			stats:     body,
+			fetchTime: fetchTime,
+			username:  getenv("ROUTER_USER", "admin"),
+			password:  getenv("ROUTER_PASS", "admin"),
+		}
 	default:
-		router = superhub3{
+		router = &superhub3{
 			IPAddress: getenv("ROUTER_IP", "192.168.100.1"),
 			stats:     body,
 			fetchTime: fetchTime,

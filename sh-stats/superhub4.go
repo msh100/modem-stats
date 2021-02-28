@@ -14,11 +14,11 @@ type superhub4 struct {
 	fetchTime int64
 }
 
-func (sh4 superhub4) fetchURL() string {
+func (sh4 *superhub4) fetchURL() string {
 	return fmt.Sprintf("http://%s/php/ajaxGet_device_networkstatus_data.php", sh4.IPAddress)
 }
 
-func (sh4 superhub4) ParseStats() (routerStats, error) {
+func (sh4 *superhub4) ParseStats() (routerStats, error) {
 	if sh4.stats == nil {
 		var err error
 		sh4.stats, sh4.fetchTime, err = simpleHTTPFetch(sh4.fetchURL())
