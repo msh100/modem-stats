@@ -104,7 +104,6 @@ func (sagemClient *sagemClient) apiRequest(actions string) []byte {
 }
 
 func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
-
 	if comhemc2.stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)
 
@@ -198,5 +197,6 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 	return routerStats{
 		upChannels:   upChannels,
 		downChannels: downChannels,
+		fetchTime:    comhemc2.fetchTime,
 	}, nil
 }
