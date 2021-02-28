@@ -24,12 +24,6 @@ func (comhemc2 comhemc2) fetchURL() string {
 	return fmt.Sprintf("http://%s/0.1/gui/#/internetConnectivity/docsis/rf-parameters", comhemc2.IPAddress)
 }
 
-/*
-curl 'http://192.168.10.1/cgi/json-req' \
-  -H 'Cookie: lang=en; session=%7B%22req_id%22%3A173%2C%22sess_id%22%3A1639072317%2C%22basic%22%3Afalse%2C%22user%22%3A%22admin%22%2C%22dataModel%22%3A%7B%22name%22%3A%22Internal%22%2C%22nss%22%3A%5B%7B%22name%22%3A%22gtw%22%2C%22uri%22%3A%22http%3A%2F%2Fsagemcom.com%2Fgateway-data%22%7D%5D%7D%2C%22ha1%22%3A%229f8c33b5fd389ff33df351941149bf42c0e8058dfc5bded0102ab4472538dc95%22%2C%22nonce%22%3A%222585743033%22%7D' \
-  --data-raw 'req=%7B%22request%22%3A%7B%22id%22%3A172%2C%22session-id%22%3A1639072317%2C%22priority%22%3Afalse%2C%22actions%22%3A%5B%7B%22id%22%3A0%2C%22method%22%3A%22getValue%22%2C%22xpath%22%3A%22Device%2FDocsis%2FCableModem%2FUpstreams%22%2C%22options%22%3A%7B%22capability-flags%22%3A%7B%22interface%22%3Atrue%7D%7D%7D%2C%7B%22id%22%3A1%2C%22method%22%3A%22getValue%22%2C%22xpath%22%3A%22Device%2FDocsis%2FCableModem%2FDownstreams%22%2C%22options%22%3A%7B%22capability-flags%22%3A%7B%22interface%22%3Atrue%7D%7D%7D%2C%7B%22id%22%3A2%2C%22method%22%3A%22getValue%22%2C%22xpath%22%3A%22Device%2FDocsis%2FCableModem%2FForceScanFreq%22%2C%22options%22%3A%7B%22capability-flags%22%3A%7B%22interface%22%3Atrue%7D%7D%7D%5D%2C%22cnonce%22%3A4186780168%2C%22auth-key%22%3A%2216607082dca5199b3d377047c4ef4b4b%22%7D%7D'
-*/
-
 type sagemClient struct {
 	host     string
 	username string
