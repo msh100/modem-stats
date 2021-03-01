@@ -31,7 +31,55 @@ type sagemClient struct {
 	requestID    int
 }
 
+func (sagemClient *sagemClient) loginRequest() string {
+	request := `[
+		{
+		  "method": "logIn",
+		  "parameters": {
+			"user": "%s",
+			"persistent": "true",
+			"session-options": {
+			  "nss": [
+				{
+				  "name": "gtw",
+				  "uri": "http://sagemcom.com/gateway-data"
+				}
+			  ],
+			  "language": "ident",
+			  "context-flags": {
+				"get-content-name": true,
+				"local-time": true
+			  },
+			  "capability-depth": 2,
+			  "capability-flags": {
+				"name": true,
+				"default-value": false,
+				"restriction": true,
+				"description": false
+			  },
+			  "time-format": "ISO_8601",
+			  "write-only-string": "_XMO_WRITE_ONLY_",
+			  "undefined-write-only-string": "_XMO_UNDEFINED_WRITE_ONLY_"
+			}
+		  }
+		}
+	  ]`
+
+	return fmt.Sprintf(request, sagemClient.username)
+}
+
 func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
+	actionsObj, _ := gabs.ParseJSON([]byte(actions))
+	requestMethod := actionsObj.Path("0.method").String()
+
+	if sagemClient.sessionID == 0 && requestMethod != "\"logIn\"" {
+		loginRequest := sagemClient.loginRequest()
+		_, err := sagemClient.apiRequest(loginRequest)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	sagemClient.requestID = sagemClient.requestID + 1
 	sagemClient.currentNonce = randomInt(10000, 50000)
 
@@ -52,7 +100,6 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	APIAddress := fmt.Sprintf("http://%s/cgi/json-req", sagemClient.host)
 
 	payloadObj := gabs.New()
-	actionsObj, _ := gabs.ParseJSON([]byte(actions))
 
 	payloadObj.Set(sagemClient.requestID, "request", "id")
 	payloadObj.Set(sagemClient.sessionID, "request", "session-id")
@@ -86,6 +133,19 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	return body, nil
 }
 
+func (sagemClient *sagemClient) getXpaths(xpaths []string) ([]byte, error) {
+	xpathTpl := `{"id":%d,"method":"getValue","xpath":"%s","options":{}}`
+	outputXpaths := []string{}
+
+	for id, xpath := range xpaths {
+		outputXpaths = append(outputXpaths, fmt.Sprintf(xpathTpl, id, xpath))
+	}
+
+	xpathReq := fmt.Sprintf("[%s]", strings.Join(outputXpaths, ","))
+
+	return sagemClient.apiRequest(xpathReq)
+}
+
 func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 	if comhemc2.stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)
@@ -99,15 +159,10 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 			requestID:    -1,
 		}
 
-		loginRequest := `[{"method":"logIn","parameters":{"user":"%s","persistent":"true","session-options":{"nss":[{"name":"gtw","uri":"http://sagemcom.com/gateway-data"}],"language":"ident","context-flags":{"get-content-name":true,"local-time":true},"capability-depth":2,"capability-flags":{"name":true,"default-value":false,"restriction":true,"description":false},"time-format":"ISO_8601","write-only-string":"_XMO_WRITE_ONLY_","undefined-write-only-string":"_XMO_UNDEFINED_WRITE_ONLY_"}}}]`
-		_, err := sagemClient.apiRequest(fmt.Sprintf(loginRequest, sagemClient.username))
-		if err != nil {
-			return routerStats{}, err
-		}
-
-		channelsXpath := `[{"id":0,"method":"getValue","xpath":"%s","options":{}},{"id":1,"method":"getValue","xpath":"%s","options":{}}]`
-		channelsXpath = fmt.Sprintf(channelsXpath, "Device/Docsis/CableModem/Upstreams", "Device/Docsis/CableModem/Downstreams")
-		channelDataReq, err := sagemClient.apiRequest(channelsXpath)
+		channelDataReq, err := sagemClient.getXpaths([]string{
+			"Device/Docsis/CableModem/Upstreams",
+			"Device/Docsis/CableModem/Downstreams",
+		})
 		if err != nil {
 			return routerStats{}, err
 		}
