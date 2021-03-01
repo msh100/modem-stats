@@ -70,9 +70,9 @@ func (sagemClient *sagemClient) loginRequest() string {
 
 func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	actionsObj, _ := gabs.ParseJSON([]byte(actions))
-	requestMethod := actionsObj.Path("0.method").String()
+	requestMethod := gabsString(actionsObj, "0.method")
 
-	if sagemClient.sessionID == 0 && requestMethod != "\"logIn\"" {
+	if sagemClient.sessionID == 0 && requestMethod != "logIn" {
 		loginRequest := sagemClient.loginRequest()
 		_, err := sagemClient.apiRequest(loginRequest)
 		if err != nil {
@@ -100,7 +100,6 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	APIAddress := fmt.Sprintf("http://%s/cgi/json-req", sagemClient.host)
 
 	payloadObj := gabs.New()
-
 	payloadObj.Set(sagemClient.requestID, "request", "id")
 	payloadObj.Set(sagemClient.sessionID, "request", "session-id")
 	payloadObj.Set("False", "request", "priority")
@@ -120,14 +119,13 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	// Set the server Nonce and session ID from the return values if they're defined
 	returnValue, _ := gabs.ParseJSON(body)
-	returnID := returnValue.Path("reply.actions.0.callbacks.0.parameters.id").String()
-	returnNonce := returnValue.Path("reply.actions.0.callbacks.0.parameters.nonce").String()
+	returnID := gabsString(returnValue, "reply.actions.0.callbacks.0.parameters.id")
+	returnNonce := gabsString(returnValue, "reply.actions.0.callbacks.0.parameters.nonce")
 
 	if returnID != "null" && returnNonce != "null" {
 		sagemClient.sessionID, _ = strconv.Atoi(returnID)
-		sagemClient.serverNonce = strings.ReplaceAll(returnNonce, "\"", "")
+		sagemClient.serverNonce = returnNonce
 	}
 
 	return body, nil
@@ -140,7 +138,6 @@ func (sagemClient *sagemClient) getXpaths(xpaths []string) ([]byte, error) {
 	for id, xpath := range xpaths {
 		outputXpaths = append(outputXpaths, fmt.Sprintf(xpathTpl, id, xpath))
 	}
-
 	xpathReq := fmt.Sprintf("[%s]", strings.Join(outputXpaths, ","))
 
 	return sagemClient.apiRequest(xpathReq)
@@ -183,40 +180,22 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 
 	reply := jsonParsed.Path("reply")
 	for _, action := range reply.S("actions").Children() {
-		query := action.Path("callbacks.0.xpath").String()
-		query = strings.ReplaceAll(query, "\"", "")
+		query := gabsString(action, "callbacks.0.xpath")
 		channels := action.Path("callbacks.0.parameters")
 
 		if query == "Device/Docsis/CableModem/Upstreams" {
 			for _, channelData := range channels.S("value").Children() {
-				channelID, _ := strconv.Atoi(channelData.Path("ChannelID").String())
-				channel, _ := strconv.Atoi(channelData.Path("uid").String())
-				frequency, _ := strconv.Atoi(channelData.Path("Frequency").String())
-				power, _ := strconv.ParseFloat(channelData.Path("PowerLevel").String(), 64)
-				powerInt := int(power * 10)
-
 				upChannels = append(upChannels, upChannel{
-					channelID: channelID,
-					channel:   channel,
-					frequency: frequency,
-					power:     powerInt,
+					channelID: gabsInt(channelData, "ChannelID"),
+					channel:   gabsInt(channelData, "uid"),
+					frequency: gabsInt(channelData, "Frequency"),
+					power:     int(gabsFloat(channelData, "PowerLevel") * 10),
 				})
 			}
 
 		} else if query == "Device/Docsis/CableModem/Downstreams" {
 			for _, channelData := range channels.S("value").Children() {
-				channelID, _ := strconv.Atoi(channelData.Path("ChannelID").String())
-				channel, _ := strconv.Atoi(channelData.Path("uid").String())
-				frequency, _ := strconv.Atoi(channelData.Path("Frequency").String())
-				snr, _ := strconv.ParseFloat(channelData.Path("SNR").String(), 64)
-				snrInt := int(snr * 10)
-				power, _ := strconv.ParseFloat(channelData.Path("PowerLevel").String(), 64)
-				powerInt := int(power * 10)
-				prerserr, _ := strconv.Atoi(channelData.Path("CorrectableCodewords").String())
-				postrserr, _ := strconv.Atoi(channelData.Path("UncorrectableCodewords").String())
-				modulation := channelData.Path("Modulation").String()
-				modulation = strings.ReplaceAll(modulation, "\"", "")
-
+				modulation := gabsString(channelData, "Modulation")
 				var scheme string
 				scheme = "SC-QAM"
 				if modulation == "256-QAM/4K-QAM" {
@@ -224,13 +203,13 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 				}
 
 				downChannels = append(downChannels, downChannel{
-					channelID:  channelID,
-					channel:    channel,
-					frequency:  frequency,
-					snr:        snrInt,
-					power:      powerInt,
-					prerserr:   prerserr,
-					postrserr:  postrserr,
+					channelID:  gabsInt(channelData, "ChannelID"),
+					channel:    gabsInt(channelData, "uid"),
+					frequency:  gabsInt(channelData, "Frequency"),
+					snr:        int(gabsFloat(channelData, "SNR") * 10),
+					power:      int(gabsFloat(channelData, "PowerLevel") * 10),
+					prerserr:   gabsInt(channelData, "CorrectableCodewords"),
+					postrserr:  gabsInt(channelData, "UncorrectableCodewords"),
 					modulation: modulation,
 					scheme:     scheme,
 				})
