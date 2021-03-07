@@ -1,4 +1,4 @@
-module github.com/msh100/vm-stats
+module github.com/msh100/docsis-stats
 
 go 1.15
 
