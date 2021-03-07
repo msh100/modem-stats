@@ -1,42 +1,62 @@
-# Superhub Channel Parser
+# DOCSIS Channel Parser
 
-A simply bash script to read channel diagnostics information from the Virgin
-Media Superhub and output it in the InfluxDB line protocol.
+A utility to read channel diagnostics information from DOCSIS modemsand output
+it in the InfluxDB line protocol.
 
-This script is intended to be used within a Telegraf instance.
+This package is intended to be used within a Telegraf instance.
 
-It may seem insane to have bash parsing JSON with regex however this has been
-done intentionally as to prevent calls to jq, a process that is extremely
-costly on a Raspberry Pi Zero.
+This package has been written in Go in an attempt to allow it to run on low end
+hardware (such as a Raspberry Pi Zero) with no issues.
 
 
 ## Usage
 
-In its simplest form, you can run this script directly.
-The only dependencies being bash and curl.
+In its simplest form, you can run this repository directly.
+The only dependencies being Go.
 
-`ROUTER_IP` can be defined if the Superhub is not addressable at
-`192.168.100.1` (the default Superhub IP in modem only mode).
+### Configuration
+
+The scripts need to know the modem type (`ROUTER_TYPE`).
+Additional information depends on the model.
+
+**Virgin Superhub 3:**
+ * `ROUTER_TYPE=superhub3`
+ * `IP_ADDRESS` (defaults to `192.168.100.1`)
+
+**Virgin Superhub 4:**
+ * `ROUTER_TYPE=superhub4`
+ * `IP_ADDRESS` (defaults to `192.168.100.1`)
+
+**Com Hem WiFi Hub C2:**
+ * `ROUTER_TYPE=comhemc2`
+ * `IP_ADDRESS` (defaults to `192.168.10.1`)
+ * `ROUTER_USER` (defaults to `admin`)
+ * `ROUTER_PASS` (defaults to `admin`)
+
+### Example
 
 ```
-$ bash routerStatus.sh
-downstream,channel=1,id=25 frequency=331000000,snr=4,power=66
-downstream,channel=2,id=9 frequency=203000000,snr=4,power=73
-downstream,channel=3,id=10 frequency=211000000,snr=4,power=74
+$ ROUTER_TYPE=superhub3 IP_ADDRESS=192.168.100.1 go run sh-stats/*.go
+downstream,channel=3,id=10,modulation=QAM256,scheme=SC-QAM frequency=211000000,snr=403,power=71,prerserr=300,postrserr=0
+downstream,channel=9,id=16,modulation=QAM256,scheme=SC-QAM frequency=259000000,snr=409,power=68,prerserr=72,postrserr=0
 ...
 ```
 
-
 ### Within Telegraf
 
-The only configuration that needs to be added as an input for Telegraf is the
-following:
+To run within Telegraf, you should build a binary for your architecture, then
+mount that executable to the container.
+
+```
+go build -o docsis-stats sh-stats/*.go
+```
+
+`docsis-stats` should be mounted to the container.
+
+The Telegraf configuration should then use the `exec` input to call it.
 
 ```
 [[inputs.exec]]
-  commands = ["bash /vm-stats/routerStatus.sh"]
+  commands = ["bash /docsis-stats"]
   data_format = "influx"
 ```
-
-This repository can be mounted as a volume within Docker if necessary to
-achieve this.

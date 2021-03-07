@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -51,4 +52,12 @@ func gabsFloat(input *gabs.Container, path string) float64 {
 func gabsString(input *gabs.Container, path string) string {
 	output := input.Path(path).String()
 	return strings.Trim(output, "\"")
+}
+
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
 }
