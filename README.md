@@ -12,7 +12,9 @@ hardware (such as a Raspberry Pi Zero) with no issues.
 ## Usage
 
 In its simplest form, you can run this repository directly.
-The only dependencies being Go.
+The only dependency being Go.
+
+A compiled binary of this repository will require no dependencies.
 
 ### Configuration
 
