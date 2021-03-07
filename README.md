@@ -1,6 +1,6 @@
 # DOCSIS Channel Parser
 
-A utility to read channel diagnostics information from DOCSIS modemsand output
+A utility to read channel diagnostics information from DOCSIS modems and output
 it in the InfluxDB line protocol.
 
 This package is intended to be used within a Telegraf instance.
@@ -28,6 +28,7 @@ Additional information depends on the model.
  * `IP_ADDRESS` (defaults to `192.168.100.1`)
 
 **Com Hem WiFi Hub C2:**
+(This is likely to work on any Sagemcom DOCSIS modem)
  * `ROUTER_TYPE=comhemc2`
  * `IP_ADDRESS` (defaults to `192.168.10.1`)
  * `ROUTER_USER` (defaults to `admin`)
