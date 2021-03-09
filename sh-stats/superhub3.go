@@ -17,12 +17,12 @@ func (sh3 *superhub3) fetchURL() string {
 	return fmt.Sprintf("http://%s/getRouterStatus", sh3.IPAddress)
 }
 
-func (sh3 *superhub3) ParseStats() (routerStats, error) {
+func (sh3 *superhub3) ParseStats() (modemStats, error) {
 	if sh3.stats == nil {
 		var err error
 		sh3.stats, sh3.fetchTime, err = simpleHTTPFetch(sh3.fetchURL())
 		if err != nil {
-			return routerStats{}, err
+			return modemStats{}, err
 		}
 	}
 
@@ -43,9 +43,9 @@ func (sh3 *superhub3) ParseStats() (routerStats, error) {
 	rateMIB := "1.3.6.1.4.1.4491.2.1.21.1.2.1.6.2.1"
 	burstMIB := "1.3.6.1.4.1.4491.2.1.21.1.2.1.7.2.1"
 
-	var downChannels []downChannel
-	var upChannels []upChannel
-	var configs []config
+	var downChannels []modemChannel
+	var upChannels []modemChannel
+	var configs []modemConfig
 
 	downChannelMatchRegex := fmt.Sprintf("^%s.1.([0-9]+)$", downMIBBase)
 	downChannelMatch := regexp.MustCompile(downChannelMatchRegex)
@@ -74,7 +74,7 @@ func (sh3 *superhub3) ParseStats() (routerStats, error) {
 			postRSErrMIB := fmt.Sprintf("%s.4.%d", bondBase, channel)
 			postRSErr, _ := strconv.Atoi(snmpData[postRSErrMIB].(string))
 
-			downChannels = append(downChannels, downChannel{
+			downChannels = append(downChannels, modemChannel{
 				channelID:  channelID,
 				channel:    channel,
 				frequency:  frequency,
@@ -100,7 +100,7 @@ func (sh3 *superhub3) ParseStats() (routerStats, error) {
 			powerMIB := fmt.Sprintf("%s.%d", powerBase, channel)
 			power, _ := strconv.Atoi(snmpData[powerMIB].(string))
 
-			upChannels = append(upChannels, upChannel{
+			upChannels = append(upChannels, modemChannel{
 				channelID: channelID,
 				channel:   channel,
 				frequency: frequency,
@@ -122,7 +122,7 @@ func (sh3 *superhub3) ParseStats() (routerStats, error) {
 				maxBurstMIB := fmt.Sprintf("%s.%s", burstMIB, upstreamID)
 				maxBurst, _ := strconv.Atoi(snmpData[maxBurstMIB].(string))
 
-				configs = append(configs, config{
+				configs = append(configs, modemConfig{
 					config:   "upstream",
 					maxrate:  maxRate,
 					maxburst: maxBurst,
@@ -140,7 +140,7 @@ func (sh3 *superhub3) ParseStats() (routerStats, error) {
 				maxBurstMIB := fmt.Sprintf("%s.%s", burstMIB, downstreamID)
 				maxBurst, _ := strconv.Atoi(snmpData[maxBurstMIB].(string))
 
-				configs = append(configs, config{
+				configs = append(configs, modemConfig{
 					config:   "downstream",
 					maxrate:  maxRate,
 					maxburst: maxBurst,
@@ -150,7 +150,7 @@ func (sh3 *superhub3) ParseStats() (routerStats, error) {
 		}
 	}
 
-	return routerStats{
+	return modemStats{
 		configs:      configs,
 		upChannels:   upChannels,
 		downChannels: downChannels,

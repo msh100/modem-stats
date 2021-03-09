@@ -18,12 +18,12 @@ func (sh4 *superhub4) fetchURL() string {
 	return fmt.Sprintf("http://%s/php/ajaxGet_device_networkstatus_data.php", sh4.IPAddress)
 }
 
-func (sh4 *superhub4) ParseStats() (routerStats, error) {
+func (sh4 *superhub4) ParseStats() (modemStats, error) {
 	if sh4.stats == nil {
 		var err error
 		sh4.stats, sh4.fetchTime, err = simpleHTTPFetch(sh4.fetchURL())
 		if err != nil {
-			return routerStats{}, err
+			return modemStats{}, err
 		}
 	}
 
@@ -44,7 +44,7 @@ func (sh4 *superhub4) ParseStats() (routerStats, error) {
 
 	var downChannelsData [][]string
 	json.Unmarshal([]byte(arr[20]), &downChannelsData)
-	var downChannels []downChannel
+	var downChannels []modemChannel
 	for index, downChannelData := range downChannelsData {
 		if len(downChannelData) != 9 {
 			error := fmt.Errorf("Abnormal down channel length, expected 9, got %d", len(downChannelData))
@@ -72,7 +72,7 @@ func (sh4 *superhub4) ParseStats() (routerStats, error) {
 			break
 		}
 
-		downChannels = append(downChannels, downChannel{
+		downChannels = append(downChannels, modemChannel{
 			channelID:  channelID,
 			channel:    index + 1,
 			frequency:  frequency,
@@ -114,7 +114,7 @@ func (sh4 *superhub4) ParseStats() (routerStats, error) {
 			break
 		}
 
-		downChannels = append(downChannels, downChannel{
+		downChannels = append(downChannels, modemChannel{
 			channelID:  channelID,
 			channel:    index + 1,
 			frequency:  frequency,
@@ -129,7 +129,7 @@ func (sh4 *superhub4) ParseStats() (routerStats, error) {
 
 	var upChannelsData [][]string
 	json.Unmarshal([]byte(arr[21]), &upChannelsData)
-	var upChannels []upChannel
+	var upChannels []modemChannel
 	for index, upChannelData := range upChannelsData {
 		if len(upChannelData) != 10 {
 			error := fmt.Errorf("Abnormal up channel length, expected 10, got %d", len(upChannelData))
@@ -153,7 +153,7 @@ func (sh4 *superhub4) ParseStats() (routerStats, error) {
 			break
 		}
 
-		upChannels = append(upChannels, upChannel{
+		upChannels = append(upChannels, modemChannel{
 			channelID: channelID,
 			channel:   index + 1,
 			frequency: frequency,
@@ -167,8 +167,8 @@ func (sh4 *superhub4) ParseStats() (routerStats, error) {
 		returnerr = errors.New(strings.Join(errstrings, "\n"))
 	}
 
-	return routerStats{
-		configs: []config{
+	return modemStats{
+		configs: []modemConfig{
 			{
 				config:   "downstream",
 				maxrate:  downRate,

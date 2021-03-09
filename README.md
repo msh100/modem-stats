@@ -1,7 +1,7 @@
-# DOCSIS Channel Parser
+# Modem Statistics Parser
 
-A utility to read channel diagnostics information from DOCSIS modems and output
-it in the InfluxDB line protocol.
+A utility to read channel diagnostics information from DOCSIS and VDSL modems
+and output it in the InfluxDB line protocol.
 
 This package is intended to be used within a Telegraf instance.
 
@@ -36,6 +36,12 @@ Additional information depends on the model.
  * `ROUTER_USER` (defaults to `admin`)
  * `ROUTER_PASS` (defaults to `admin`)
 
+**Sky Hub 2:**
+ * `ROUTER_TYPE=skyhub2`
+ * `IP_ADDRESS` (defaults to `192.168.0.1`)
+ * `ROUTER_USER` (defaults to `admin`)
+ * `ROUTER_PASS` (defaults to `sky`)
+
 ### Example
 
 ```
@@ -51,15 +57,15 @@ To run within Telegraf, you should build a binary for your architecture, then
 mount that executable to the container.
 
 ```
-go build -o docsis-stats sh-stats/*.go
+go build -o modem-stats sh-stats/*.go
 ```
 
-`docsis-stats` should be mounted to the container.
+`modem-stats` should be mounted to the container.
 
 The Telegraf configuration should then use the `exec` input to call it.
 
 ```
 [[inputs.exec]]
-  commands = ["bash /docsis-stats"]
+  commands = ["bash /modem-stats"]
   data_format = "influx"
 ```

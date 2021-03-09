@@ -143,7 +143,7 @@ func (sagemClient *sagemClient) getXpaths(xpaths []string) ([]byte, error) {
 	return sagemClient.apiRequest(xpathReq)
 }
 
-func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
+func (comhemc2 *comhemc2) ParseStats() (modemStats, error) {
 	if comhemc2.stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)
 
@@ -161,7 +161,7 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 			"Device/Docsis/CableModem/Downstreams",
 		})
 		if err != nil {
-			return routerStats{}, err
+			return modemStats{}, err
 		}
 
 		fetchTime := (time.Now().UnixNano() / int64(time.Millisecond)) - timeStart
@@ -170,12 +170,12 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 		comhemc2.stats = channelDataReq
 	}
 
-	var downChannels []downChannel
-	var upChannels []upChannel
+	var downChannels []modemChannel
+	var upChannels []modemChannel
 
 	jsonParsed, err := gabs.ParseJSON(comhemc2.stats)
 	if err != nil {
-		return routerStats{}, err
+		return modemStats{}, err
 	}
 
 	reply := jsonParsed.Path("reply")
@@ -185,7 +185,7 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 
 		if query == "Device/Docsis/CableModem/Upstreams" {
 			for _, channelData := range channels.S("value").Children() {
-				upChannels = append(upChannels, upChannel{
+				upChannels = append(upChannels, modemChannel{
 					channelID: gabsInt(channelData, "ChannelID"),
 					channel:   gabsInt(channelData, "uid"),
 					frequency: gabsInt(channelData, "Frequency"),
@@ -202,7 +202,7 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 					scheme = "OFDM"
 				}
 
-				downChannels = append(downChannels, downChannel{
+				downChannels = append(downChannels, modemChannel{
 					channelID:  gabsInt(channelData, "ChannelID"),
 					channel:    gabsInt(channelData, "uid"),
 					frequency:  gabsInt(channelData, "Frequency"),
@@ -218,7 +218,7 @@ func (comhemc2 *comhemc2) ParseStats() (routerStats, error) {
 
 	}
 
-	return routerStats{
+	return modemStats{
 		upChannels:   upChannels,
 		downChannels: downChannels,
 		fetchTime:    comhemc2.fetchTime,

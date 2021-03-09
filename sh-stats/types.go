@@ -1,6 +1,6 @@
 package main
 
-type downChannel struct {
+type modemChannel struct {
 	channelID  int
 	channel    int
 	frequency  int
@@ -10,26 +10,25 @@ type downChannel struct {
 	postrserr  int
 	modulation string
 	scheme     string
+
+	noise       int
+	attenuation int
 }
-type upChannel struct {
-	channelID int
-	channel   int
-	frequency int
-	power     int
-}
-type config struct {
+
+type modemConfig struct {
 	config   string
 	maxrate  int
 	maxburst int
 }
 
-type routerStats struct {
-	configs      []config
-	upChannels   []upChannel
-	downChannels []downChannel
+type modemStats struct {
+	configs      []modemConfig
+	upChannels   []modemChannel
+	downChannels []modemChannel
 	fetchTime    int64
+	modemType    string
 }
 
-type router interface {
-	ParseStats() (routerStats, error)
+type docsisModem interface {
+	ParseStats() (modemStats, error)
 }

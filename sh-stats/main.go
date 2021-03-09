@@ -26,32 +26,40 @@ func main() {
 		routerType = getenv("ROUTER_TYPE", "superhub3")
 	}
 
-	var router router
+	var modem docsisModem
 
 	switch routerType {
 	case "superhub4":
-		router = &superhub4{
+		modem = &superhub4{
 			IPAddress: getenv("ROUTER_IP", "192.168.100.1"),
 			stats:     body,
 			fetchTime: fetchTime,
 		}
 	case "comhemc2":
-		router = &comhemc2{
+		modem = &comhemc2{
 			IPAddress: getenv("ROUTER_IP", "192.168.10.1"),
 			stats:     body,
 			fetchTime: fetchTime,
 			username:  getenv("ROUTER_USER", "admin"),
 			password:  getenv("ROUTER_PASS", "admin"),
 		}
+	case "skyhub2":
+		modem = &skyhub2{
+			IPAddress: getenv("ROUTER_IP", "192.168.0.1"),
+			stats:     body,
+			fetchTime: fetchTime,
+			username:  getenv("ROUTER_USER", "admin"),
+			password:  getenv("ROUTER_PASS", "sky"),
+		}
 	default:
-		router = &superhub3{
+		modem = &superhub3{
 			IPAddress: getenv("ROUTER_IP", "192.168.100.1"),
 			stats:     body,
 			fetchTime: fetchTime,
 		}
 	}
 
-	routerStats, err := fetchStats(router)
+	routerStats, err := fetchStats(modem)
 
 	if err != nil {
 		log.Printf("Error returned by parser: %v", err)
@@ -61,7 +69,7 @@ func main() {
 	}
 }
 
-func fetchStats(router router) (routerStats, error) {
+func fetchStats(router docsisModem) (modemStats, error) {
 	stats, err := router.ParseStats()
 	return stats, err
 }
