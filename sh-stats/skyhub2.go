@@ -35,8 +35,8 @@ func (sky2 *skyhub2) ParseStats() (modemStats, error) {
 	syncRegex := regexp.MustCompile("Connection Speed \\(Kbps\\)<\\/td><td>([0-9]+)<\\/td><td>([0-9]+)")
 	syncRate := syncRegex.FindStringSubmatch(string(sky2.stats))
 
-	downSync, _ := strconv.Atoi(syncRate[1])
-	upSync, _ := strconv.Atoi(syncRate[2])
+	upSync, _ := strconv.Atoi(syncRate[1])
+	downSync, _ := strconv.Atoi(syncRate[2])
 
 	configs := []modemConfig{
 		{
