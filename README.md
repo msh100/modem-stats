@@ -31,7 +31,7 @@ More architectures can be added on request.
 The scripts need to know the modem type (`ROUTER_TYPE`).
 Additional information depends on the model.
 
-**Virgin Superhub 3
+**Virgin Superhub 3<br/>
 Ziggo Connectbox:**
  * `ROUTER_TYPE=superhub3`
  * `IP_ADDRESS` (defaults to `192.168.100.1`)
