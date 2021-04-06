@@ -1,0 +1,34 @@
+name: Build binaries
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.16.0'
+
+    - name: Run build
+      run: |
+        mkdir output/
+        go build -o output/modem-stats.x86 sh-stats/*.go
+        GOARCH=arm GOARM=5 go build -o output/modem-stats.arm5 sh-stats/*.go
+        ls -lah output/
+
+    - name: Push to B2
+      uses: jakejarvis/s3-sync-action@master
+      env:
+        AWS_S3_BUCKET: modem-stats
+        AWS_ACCESS_KEY_ID: ${{ secrets.B2_APPKEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPKEY }}
+        SOURCE_DIR: 'output'
+        AWS_S3_ENDPOINT: 's3.us-west-000.backblazeb2.com'
