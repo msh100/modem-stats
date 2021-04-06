@@ -16,6 +16,16 @@ The only dependency being Go.
 
 A compiled binary of this repository will require no dependencies.
 
+### Downloading Binaries
+
+Binaries for this repository can be fetched from:
+
+ * [amd64](https://b2.msh100.uk/file/modem-stats/modem-stats.x86)
+ * [ARM5](https://b2.msh100.uk/file/modem-stats/modem-stats.arm5)
+
+More architectures can be added on request.
+
+
 ### Configuration
 
 The scripts need to know the modem type (`ROUTER_TYPE`).
