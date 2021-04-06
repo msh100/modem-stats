@@ -31,4 +31,4 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.B2_APPKEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPKEY }}
         SOURCE_DIR: 'output'
-        AWS_S3_ENDPOINT: 's3.us-west-000.backblazeb2.com'
+        AWS_S3_ENDPOINT: 'https://s3.us-west-000.backblazeb2.com/'
