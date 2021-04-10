@@ -79,7 +79,7 @@ The Telegraf configuration should then use the `exec` input to call it.
 
 ```
 [[inputs.exec]]
-  commands = ["bash /modem-stats"]
+  commands = ["/modem-stats"]
   data_format = "influx"
 ```
 
