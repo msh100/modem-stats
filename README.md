@@ -8,6 +8,8 @@ This package is intended to be used within a Telegraf instance.
 This package has been written in Go in an attempt to allow it to run on low end
 hardware (such as a Raspberry Pi Zero) with no issues.
 
+![Grafana dashboard screenshot](https://user-images.githubusercontent.com/4477262/114266746-cd910980-99ef-11eb-8a5e-f4f719897719.JPG)
+
 
 ## Usage
 
@@ -80,3 +82,8 @@ The Telegraf configuration should then use the `exec` input to call it.
   commands = ["bash /modem-stats"]
   data_format = "influx"
 ```
+
+## Grafana
+
+You can add [the Router Stats dashboard](https://grafana.com/grafana/dashboards/14209)
+to your Grafana instance by adding dashboard ID `14209`.
