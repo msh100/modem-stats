@@ -22,7 +22,6 @@ jobs:
         mkdir output/
         go build -o output/modem-stats.x86 sh-stats/*.go
         GOARCH=arm GOARM=5 go build -o output/modem-stats.arm5 sh-stats/*.go
-        cp output/* docker/
 
     - name: Push to B2
       uses: jakejarvis/s3-sync-action@master
@@ -40,4 +39,3 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: msh100/modem-stats
         tags: latest
-        context: /github/workspace/docker/
