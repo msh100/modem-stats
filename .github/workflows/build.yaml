@@ -40,4 +40,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: msh100/modem-stats
         tags: latest
-        context: ./docker/
+        context: /github/workspace/docker/
