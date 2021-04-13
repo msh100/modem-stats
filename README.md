@@ -18,6 +18,42 @@ The only dependency being Go.
 
 A compiled binary of this repository will require no dependencies.
 
+
+### Within Docker
+
+A Docker image exists for this repository with Telegraf configured to write to
+InfluxDB at `msh100/modem-stats`.
+This image currently only supports X86.
+
+The following environment variables must be set:
+
+Name           | Description                                 | Example
+---------------|---------------------------------------------|---------------------
+`INFLUX_URL`   | The HTTP API URI for your InfluxDB server.  | `http://influxdb:8086`
+`INFLUX_DB`    | The InfluxDB database to use                | `modem-stats`
+`PING_TARGETS` | A comma seperated string of targets to ping | `1.1.1.1,8.8.8.8,bbc.co.uk`
+
+Environment variables must also be passed in for `modem-stats` to run.
+Check the [configuration section below](#Configuration).
+
+`docker-compose.yaml` example:
+```yaml
+---
+version: "2.1"
+services:
+  modem-stats:
+    image: msh100/modem-stats
+    container_name: modem-stats
+    environment:
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_DB=modem-stats
+      - PING_TARGETS=1.1.1.1,8.8.8.8,bbc.co.uk
+      - ROUTER_TYPE=superhub3
+      - IP_ADDRESS=192.168.100.1
+    restart: unless-stopped
+```
+
+
 ### Downloading Binaries
 
 Binaries for this repository can be fetched from:

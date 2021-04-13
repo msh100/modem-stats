@@ -22,7 +22,7 @@ jobs:
         mkdir output/
         go build -o output/modem-stats.x86 sh-stats/*.go
         GOARCH=arm GOARM=5 go build -o output/modem-stats.arm5 sh-stats/*.go
-        ls -lah output/
+        cp output/* docker/
 
     - name: Push to B2
       uses: jakejarvis/s3-sync-action@master
@@ -32,3 +32,12 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPKEY }}
         SOURCE_DIR: 'output'
         AWS_S3_ENDPOINT: 'https://s3.us-west-000.backblazeb2.com/'
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: msh100/modem-stats
+        tags: latest
+        context: docker/
