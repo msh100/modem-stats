@@ -182,5 +182,6 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 		},
 		upChannels:   upChannels,
 		downChannels: downChannels,
+		fetchTime:    sh4.fetchTime,
 	}, returnerr
 }
