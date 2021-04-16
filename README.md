@@ -75,6 +75,7 @@ Ziggo Connectbox:**
  * `IP_ADDRESS` (defaults to `192.168.100.1`)
 
 **Virgin Superhub 4:**
+> **:warning: Warning:** Despite this statistics parser being fully functional, after some time the Superhub 4 fails to provide valid statistics until the device is rebooted. This is not an issue with the parser, but is an issue with the Superhub itself. [Issue](https://github.com/msh100/modem-stats/issues/2).
  * `ROUTER_TYPE=superhub4`
  * `IP_ADDRESS` (defaults to `192.168.100.1`)
 
