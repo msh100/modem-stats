@@ -1,14 +1,25 @@
 # Modem Statistics Parser
 
-A utility to read channel diagnostics information from DOCSIS and VDSL modems
-and output it in the InfluxDB line protocol.
-
-This package is intended to be used within a Telegraf instance.
+A utility to read and parse channel diagnostics information from DOCSIS and
+VDSL modems.
+This package is intended to be used within a Telegraf instance to be fed into
+InfluxDB.
 
 This package has been written in Go in an attempt to allow it to run on low end
 hardware (such as a Raspberry Pi Zero) with no issues.
 
 ![Grafana dashboard screenshot](https://user-images.githubusercontent.com/4477262/114266746-cd910980-99ef-11eb-8a5e-f4f719897719.JPG)
+
+
+ * [Usage](#Usage)
+   * [Docker Image](#Docker-Image)
+   * [Telegraf](#Telegraf)
+ * [Binaries](#Binaries)
+   * [Download](#Downloading)
+   * [Build](#Building)
+ * [Configuration](#Configuration)
+   * [Example Usage](#Example-Usage)
+ * [Grafana](#Grafana)
 
 
 ## Usage
@@ -19,7 +30,7 @@ The only dependency being Go.
 A compiled binary of this repository will require no dependencies.
 
 
-### Within Docker
+### Docker Image
 
 A Docker image exists for this repository with Telegraf configured to write to
 InfluxDB at `msh100/modem-stats`.
@@ -54,17 +65,72 @@ services:
 ```
 
 
-### Downloading Binaries
+### Telegraf
 
-Binaries for this repository can be fetched from:
+If you are already running Telegraf, it makes more sense to add an extra input
+to collect data from your modem.
+
+To do this, we utilise the `input.exec` plugin (which exists in upstream
+Telegraf).
+Telegraf will be able to interpret the output and pass it over to your TSDB.
+
+To run within Telegraf, you should [obtain a binary](###############LINKHERE) for your architecture and
+make that binary accessible to Telegraf (this may involve mounting the binary
+if you are running Docker).
+
+The Telegraf configuration should then use the `exec` input to collect data
+from modem stats.
+
+```
+[[inputs.exec]]
+  commands = ["/modem-stats"]
+  data_format = "influx"
+```
+
+To pass [configuration](#Configuration), you need to start Telegraf with those
+environment variables defined.
+If this is not possible, you can create a wrapper script to set those variables
+and call `modem-stats`, like the following:
+
+```bash
+#!/bin/bash
+ROUTER_TYPE=superhub3 /modem-stats
+```
+
+
+## Binaries
+
+The output of this repository is ultimately a single static binary with zero
+dependencies.
+
+
+### Downloading
+
+Upon push to master, this repository builds and pushed binaries.
+These can be downloaded from:
 
  * [amd64](https://b2.msh100.uk/file/modem-stats/modem-stats.x86)
  * [ARM5](https://b2.msh100.uk/file/modem-stats/modem-stats.arm5)
 
 More architectures can be added on request.
 
+In most cases, these binaries will be sufficient.
 
-### Configuration
+
+### Building
+
+If you would like to build the binaries yourself, you will require Go 1.16 (may
+work with earlier versions, but this is untested).
+
+```
+go build -o modem-stats sh-stats/*.go
+```
+
+For other architectures, extra options will need to be provided.
+[Refer to this blog port for more information](https://www.digitalocean.com/community/tutorials/how-to-build-go-executables-for-multiple-platforms-on-ubuntu-16-04).
+
+
+## Configuration
 
 The scripts need to know the modem type (`ROUTER_TYPE`).
 Additional information depends on the model.
@@ -92,7 +158,8 @@ Ziggo Connectbox:**
  * `ROUTER_USER` (defaults to `admin`)
  * `ROUTER_PASS` (defaults to `sky`)
 
-### Example
+
+### Example Usage
 
 ```
 $ ROUTER_TYPE=superhub3 IP_ADDRESS=192.168.100.1 go run sh-stats/*.go
@@ -101,24 +168,6 @@ downstream,channel=9,id=16,modulation=QAM256,scheme=SC-QAM frequency=259000000,s
 ...
 ```
 
-### Within Telegraf
-
-To run within Telegraf, you should build a binary for your architecture, then
-mount that executable to the container.
-
-```
-go build -o modem-stats sh-stats/*.go
-```
-
-`modem-stats` should be mounted to the container.
-
-The Telegraf configuration should then use the `exec` input to call it.
-
-```
-[[inputs.exec]]
-  commands = ["/modem-stats"]
-  data_format = "influx"
-```
 
 ## Grafana
 
