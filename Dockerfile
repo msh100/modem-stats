@@ -6,8 +6,8 @@ RUN chmod +x /modem-stats
 ADD ./docker/entrypoint-msh.sh /entrypoint-msh.sh
 RUN chmod +x /entrypoint-msh.sh
 
-RUN mkdir -p /etc/telegraf.d/
-ADD ./docker/telegraf.conf /etc/telegraf.d/
+RUN mkdir -p /etc/telegraf.d/ /etc/template/
+ADD ./docker/telegraf.conf /etc/template/
 
 # We build from scratch as to remove all the volume and exposures from the
 # source Telegraf Docker image. Since we don't have any state or listeners,

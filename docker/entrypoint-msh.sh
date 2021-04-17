@@ -14,10 +14,14 @@ if [ "${PING_TARGETS}" != "" ]; then
     for TARGET_VALUE in "${PING_TARGETS_ARR[@]}"; do
         PING_TARGETS_STRING="${PING_TARGETS_STRING}\"${TARGET_VALUE}\", "
     done
-    export PING_TARGETS="[ ${PING_TARGETS_STRING::-2} ]"
+    PING_TARGETS="[ ${PING_TARGETS_STRING::-2} ]"
 else
-    export PING_TARGETS="[]"
+    PING_TARGETS="[]"
 fi
+
+cat /etc/template/telegraf.conf |\
+    sed "s/_PING_TARGETS/${PING_TARGETS}/" >\
+    /etc/telegraf.d/telegraf.conf
 
 exec telegraf \
     --config "/etc/telegraf.d/telegraf.conf" \
