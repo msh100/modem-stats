@@ -143,6 +143,10 @@ func (sagemClient *sagemClient) getXpaths(xpaths []string) ([]byte, error) {
 	return sagemClient.apiRequest(xpathReq)
 }
 
+func (comhemc2 *comhemc2) ClearStats() {
+	comhemc2.stats = nil
+}
+
 func (comhemc2 *comhemc2) ParseStats() (modemStats, error) {
 	if comhemc2.stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)

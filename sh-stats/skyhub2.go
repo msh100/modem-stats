@@ -14,6 +14,10 @@ type skyhub2 struct {
 	password  string
 }
 
+func (sky2 *skyhub2) ClearStats() {
+	sky2.stats = nil
+}
+
 func (sky2 *skyhub2) fetchURL() string {
 	return fmt.Sprintf(
 		"http://%s:%s@%s/Now_TV_system.html",

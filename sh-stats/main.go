@@ -1,14 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
+
+	flags "github.com/jessevdk/go-flags"
 )
 
 func main() {
+	_, err := flags.ParseArgs(&commandLineOpts, os.Args)
+	if err != nil {
+		os.Exit(1)
+	}
+
 	var body []byte
 	var fetchTime int64
 	if localFile := getenv("LOCAL_FILE", ""); localFile != "" {
@@ -59,17 +67,29 @@ func main() {
 		}
 	}
 
-	routerStats, err := fetchStats(modem)
+	for {
+		routerStats, err := fetchStats(modem)
 
-	if err != nil {
-		log.Printf("Error returned by parser: %v", err)
-		os.Exit(1)
-	} else {
-		printForInflux(routerStats)
+		if err != nil {
+			log.Printf("Error returned by parser: %v", err)
+		} else {
+			printForInflux(routerStats)
+		}
+
+		if commandLineOpts.Daemon {
+			bufio.NewScanner(os.Stdin).Scan()
+			resetStats(modem)
+		} else {
+			break
+		}
 	}
 }
 
 func fetchStats(router docsisModem) (modemStats, error) {
 	stats, err := router.ParseStats()
 	return stats, err
+}
+
+func resetStats(router docsisModem) {
+	router.ClearStats()
 }

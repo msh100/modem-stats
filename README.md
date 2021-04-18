@@ -70,21 +70,26 @@ services:
 If you are already running Telegraf, it makes more sense to add an extra input
 to collect data from your modem.
 
-To do this, we utilise the `input.exec` plugin (which exists in upstream
+To do this, we utilise the `input.execd` plugin (which exists in upstream
 Telegraf).
-Telegraf will be able to interpret the output and pass it over to your TSDB.
+Telegraf will be able to trigger a statistics fetch and interpret the output to
+pass it over to your Telegraf outputs.
 
-To run within Telegraf, you should [obtain a binary](###############LINKHERE) for your architecture and
-make that binary accessible to Telegraf (this may involve mounting the binary
-if you are running Docker).
+To run within Telegraf, you should [obtain a binary](#Downloading) for your
+architecture and make that binary accessible to Telegraf (this may involve
+mounting the binary if you are running Docker).
 
-The Telegraf configuration should then use the `exec` input to collect data
+The Telegraf configuration should then use the `execd` input to collect data
 from modem stats.
 
+We need to set the `--daemon` flag to instruct Modem Stats to listen for new
+STDIN lines to trigger data gathering.
+
 ```
-[[inputs.exec]]
-  commands = ["/modem-stats"]
+[[inputs.execd]]
+  command = ["/modem-stats", "--daemon"]
   data_format = "influx"
+  signal = "STDIN"
 ```
 
 To pass [configuration](#Configuration), you need to start Telegraf with those
@@ -94,7 +99,7 @@ and call `modem-stats`, like the following:
 
 ```bash
 #!/bin/bash
-ROUTER_TYPE=superhub3 /modem-stats
+ROUTER_TYPE=superhub3 /modem-stats --daemon
 ```
 
 

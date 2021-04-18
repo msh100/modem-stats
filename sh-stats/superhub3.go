@@ -13,6 +13,10 @@ type superhub3 struct {
 	fetchTime int64
 }
 
+func (sh3 *superhub3) ClearStats() {
+	sh3.stats = nil
+}
+
 func (sh3 *superhub3) fetchURL() string {
 	return fmt.Sprintf("http://%s/getRouterStatus", sh3.IPAddress)
 }
