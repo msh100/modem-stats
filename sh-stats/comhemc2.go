@@ -13,11 +13,12 @@ import (
 )
 
 type comhemc2 struct {
-	IPAddress string
-	stats     []byte
-	fetchTime int64
-	username  string
-	password  string
+	IPAddress   string
+	stats       []byte
+	fetchTime   int64
+	username    string
+	password    string
+	sagemClient *sagemClient
 }
 
 type sagemClient struct {
@@ -71,10 +72,8 @@ func (sagemClient *sagemClient) loginRequest() string {
 func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	actionsObj, _ := gabs.ParseJSON([]byte(actions))
 	requestMethod := gabsString(actionsObj, "0.method")
-
 	if sagemClient.sessionID == 0 && requestMethod != "logIn" {
-		loginRequest := sagemClient.loginRequest()
-		_, err := sagemClient.apiRequest(loginRequest)
+		_, err := sagemClient.apiRequest(sagemClient.loginRequest())
 		if err != nil {
 			return nil, err
 		}
@@ -122,10 +121,24 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	returnValue, _ := gabs.ParseJSON(body)
 	returnID := gabsString(returnValue, "reply.actions.0.callbacks.0.parameters.id")
 	returnNonce := gabsString(returnValue, "reply.actions.0.callbacks.0.parameters.nonce")
+	errorCode := gabsString(returnValue, "reply.error.code")
 
 	if returnID != "null" && returnNonce != "null" {
 		sagemClient.sessionID, _ = strconv.Atoi(returnID)
 		sagemClient.serverNonce = returnNonce
+	}
+	if errorCode == "16777219" { // Session has expired
+		sagemClient.sessionID = 0
+		sagemClient.currentNonce = 0
+		sagemClient.requestID = -1
+		sagemClient.serverNonce = ""
+
+		_, err := sagemClient.apiRequest(sagemClient.loginRequest())
+		if err != nil {
+			return nil, err
+		}
+
+		return sagemClient.apiRequest(actions)
 	}
 
 	return body, nil
@@ -151,16 +164,18 @@ func (comhemc2 *comhemc2) ParseStats() (modemStats, error) {
 	if comhemc2.stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)
 
-		sagemClient := sagemClient{
-			host:         comhemc2.IPAddress,
-			username:     comhemc2.username,
-			password:     comhemc2.password,
-			currentNonce: 0,
-			sessionID:    0,
-			requestID:    -1,
+		if comhemc2.sagemClient == nil {
+			comhemc2.sagemClient = &sagemClient{
+				host:         comhemc2.IPAddress,
+				username:     comhemc2.username,
+				password:     comhemc2.password,
+				currentNonce: 0,
+				sessionID:    0,
+				requestID:    -1,
+			}
 		}
 
-		channelDataReq, err := sagemClient.getXpaths([]string{
+		channelDataReq, err := comhemc2.sagemClient.getXpaths([]string{
 			"Device/Docsis/CableModem/Upstreams",
 			"Device/Docsis/CableModem/Downstreams",
 		})
