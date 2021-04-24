@@ -38,11 +38,12 @@ This image currently only supports X86.
 
 The following environment variables must be set:
 
-Name           | Description                                 | Example
----------------|---------------------------------------------|---------------------
-`INFLUX_URL`   | The HTTP API URI for your InfluxDB server.  | `http://influxdb:8086`
-`INFLUX_DB`    | The InfluxDB database to use                | `modem-stats`
-`PING_TARGETS` | A comma seperated string of targets to ping | `1.1.1.1,8.8.8.8,bbc.co.uk`
+Name             | Description                                 | Example
+-----------------|---------------------------------------------|---------------------
+`INFLUX_URL`     | The HTTP API URI for your InfluxDB server.  | `http://influxdb:8086`
+`INFLUX_DB`      | The InfluxDB database to use                | `modem-stats`
+`PING_TARGETS`   | A comma seperated string of targets to ping | `1.1.1.1,8.8.8.8,bbc.co.uk`
+`FETCH_INTERVAL` | The frequency (in seconds) to fetch stats.  | `10` (default `10`)
 
 Environment variables must also be passed in for `modem-stats` to run.
 Check the [configuration section below](#Configuration).
