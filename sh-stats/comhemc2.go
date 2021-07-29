@@ -160,6 +160,10 @@ func (comhemc2 *comhemc2) ClearStats() {
 	comhemc2.stats = nil
 }
 
+func (comhemc2 *comhemc2) Type() string {
+	return "DOCSIS"
+}
+
 func (comhemc2 *comhemc2) ParseStats() (modemStats, error) {
 	if comhemc2.stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)

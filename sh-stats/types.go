@@ -32,8 +32,10 @@ type modemStats struct {
 type docsisModem interface {
 	ParseStats() (modemStats, error)
 	ClearStats()
+	Type() string
 }
 
 var commandLineOpts struct {
-	Daemon bool `short:"d" long:"daemon" description:"Gather statistics on new line to STDIN?"`
+	Daemon         bool `short:"d" long:"daemon" description:"Gather statistics on new line to STDIN?"`
+	PrometheusPort int  `short:"p" long:"port" description:"Prometheus exporter port (disabled if not defined)"`
 }

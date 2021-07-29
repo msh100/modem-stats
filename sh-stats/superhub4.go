@@ -18,6 +18,10 @@ func (sh4 *superhub4) ClearStats() {
 	sh4.stats = nil
 }
 
+func (sh4 *superhub4) Type() string {
+	return "DOCSIS"
+}
+
 func (sh4 *superhub4) fetchURL() string {
 	return fmt.Sprintf("http://%s/php/ajaxGet_device_networkstatus_data.php", sh4.IPAddress)
 }

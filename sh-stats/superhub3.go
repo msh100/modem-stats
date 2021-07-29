@@ -17,6 +17,10 @@ func (sh3 *superhub3) ClearStats() {
 	sh3.stats = nil
 }
 
+func (sh3 *superhub3) Type() string {
+	return "DOCSIS"
+}
+
 func (sh3 *superhub3) fetchURL() string {
 	return fmt.Sprintf("http://%s/getRouterStatus", sh3.IPAddress)
 }

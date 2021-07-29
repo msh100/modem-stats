@@ -67,20 +67,24 @@ func main() {
 		}
 	}
 
-	for {
-		routerStats, err := fetchStats(modem)
+	if commandLineOpts.PrometheusPort > 0 {
+		modemStatsPrometheus(modem, commandLineOpts.PrometheusPort)
+	} else {
+		for {
+			modemStats, err := fetchStats(modem)
 
-		if err != nil {
-			log.Printf("Error returned by parser: %v", err)
-		} else {
-			printForInflux(routerStats)
-		}
+			if err != nil {
+				log.Printf("Error returned by parser: %v", err)
+			} else {
+				printForInflux(modemStats)
+			}
 
-		if commandLineOpts.Daemon {
-			bufio.NewScanner(os.Stdin).Scan()
-			resetStats(modem)
-		} else {
-			break
+			if commandLineOpts.Daemon {
+				bufio.NewScanner(os.Stdin).Scan()
+				resetStats(modem)
+			} else {
+				break
+			}
 		}
 	}
 }

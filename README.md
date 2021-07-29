@@ -4,6 +4,7 @@ A utility to read and parse channel diagnostics information from DOCSIS and
 VDSL modems.
 This package is intended to be used within a Telegraf instance to be fed into
 InfluxDB.
+A Prometheus endpoint can also be exposed for collection.
 
 This package has been written in Go in an attempt to allow it to run on low end
 hardware (such as a Raspberry Pi Zero) with no issues.
@@ -14,6 +15,7 @@ hardware (such as a Raspberry Pi Zero) with no issues.
  * [Usage](#Usage)
    * [Docker Image](#Docker-Image)
    * [Telegraf](#Telegraf)
+   * [Prometheus](#Prometheus)
  * [Binaries](#Binaries)
    * [Download](#Downloading)
    * [Build](#Building)
@@ -102,6 +104,18 @@ and call `modem-stats`, like the following:
 #!/bin/bash
 ROUTER_TYPE=superhub3 /modem-stats --daemon
 ```
+
+
+### Prometheus
+
+Is it possible to expose a Prometheus exporter.
+If `--port` is defined, a webserver will start and Prometheus metrics will be
+accessible at `/metrics`.
+
+```
+$ ROUTER_TYPE=superhub3 /modem-stats --port=9000
+```
+
 
 
 ## Binaries
