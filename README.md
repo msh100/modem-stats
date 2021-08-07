@@ -102,7 +102,7 @@ and call `modem-stats`, like the following:
 
 ```bash
 #!/bin/bash
-ROUTER_TYPE=superhub3 /modem-stats --daemon
+/modem-stats --modem=superhub3 --daemon
 ```
 
 
@@ -113,9 +113,8 @@ If `--port` is defined, a webserver will start and Prometheus metrics will be
 accessible at `/metrics`.
 
 ```
-$ ROUTER_TYPE=superhub3 /modem-stats --port=9000
+$ /modem-stats --modem=superhub3 --port=9000
 ```
-
 
 
 ## Binaries
@@ -152,37 +151,41 @@ For other architectures, extra options will need to be provided.
 
 ## Configuration
 
-The scripts need to know the modem type (`ROUTER_TYPE`).
+The scripts need to know the modem type (`ROUTER_TYPE` or `--modem=`).
 Additional information depends on the model.
 
-**Virgin Superhub 3<br/>
+**Virgin Media Superhub 3<br/>
 Ziggo Connectbox:**
- * `ROUTER_TYPE=superhub3`
- * `IP_ADDRESS` (defaults to `192.168.100.1`)
+ * `ROUTER_TYPE=superhub3` or `--modem=superhub3`
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
-**Virgin Superhub 4:**
+**Virgin Media Superhub 4:**
 > **:warning: Warning:** Despite this statistics parser being fully functional, after some time the Superhub 4 fails to provide valid statistics until the device is rebooted. This is not an issue with the parser, but is an issue with the Superhub itself. [Issue](https://github.com/msh100/modem-stats/issues/2).
- * `ROUTER_TYPE=superhub4`
- * `IP_ADDRESS` (defaults to `192.168.100.1`)
+ * `ROUTER_TYPE=superhub4` or `--modem=superhub4`
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
 **Com Hem WiFi Hub C2:**
 (This is likely to work on any Sagemcom DOCSIS modem)
- * `ROUTER_TYPE=comhemc2`
- * `IP_ADDRESS` (defaults to `192.168.10.1`)
- * `ROUTER_USER` (defaults to `admin`)
- * `ROUTER_PASS` (defaults to `admin`)
+ * `ROUTER_TYPE=comhemc2` or `--modem=comhemc2`
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.10.1`)
+ * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
+ * `ROUTER_PASS` or `--password=password` (defaults to `admin`)
 
 **Sky Hub 2:**
  * `ROUTER_TYPE=skyhub2`
- * `IP_ADDRESS` (defaults to `192.168.0.1`)
- * `ROUTER_USER` (defaults to `admin`)
- * `ROUTER_PASS` (defaults to `sky`)
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.0.1`)
+ * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
+ * `ROUTER_PASS` or `--password=password` (defaults to `sky`)
 
 
 ### Example Usage
 
 ```
 $ ROUTER_TYPE=superhub3 IP_ADDRESS=192.168.100.1 go run sh-stats/*.go
+downstream,channel=3,id=10,modulation=QAM256,scheme=SC-QAM frequency=211000000,snr=403,power=71,prerserr=300,postrserr=0
+downstream,channel=9,id=16,modulation=QAM256,scheme=SC-QAM frequency=259000000,snr=409,power=68,prerserr=72,postrserr=0
+...
+$ go run sh-stats/*.go --modem=superhub3 --ip=192.168.100.1
 downstream,channel=3,id=10,modulation=QAM256,scheme=SC-QAM frequency=211000000,snr=403,power=71,prerserr=300,postrserr=0
 downstream,channel=9,id=16,modulation=QAM256,scheme=SC-QAM frequency=259000000,snr=409,power=68,prerserr=72,postrserr=0
 ...

@@ -1,4 +1,4 @@
-package main
+package comhemc2
 
 import (
 	"bytes"
@@ -10,14 +10,16 @@ import (
 	"time"
 
 	gabs "github.com/Jeffail/gabs/v2"
+
+	"github.com/msh100/modem-stats/utils"
 )
 
-type comhemc2 struct {
+type Modem struct {
 	IPAddress   string
-	stats       []byte
-	fetchTime   int64
-	username    string
-	password    string
+	Stats       []byte
+	FetchTime   int64
+	Username    string
+	Password    string
 	sagemClient *sagemClient
 }
 
@@ -71,7 +73,7 @@ func (sagemClient *sagemClient) loginRequest() string {
 
 func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	actionsObj, _ := gabs.ParseJSON([]byte(actions))
-	requestMethod := gabsString(actionsObj, "0.method")
+	requestMethod := utils.GabsString(actionsObj, "0.method")
 	if sagemClient.sessionID == 0 && requestMethod != "logIn" {
 		_, err := sagemClient.apiRequest(sagemClient.loginRequest())
 		if err != nil {
@@ -80,17 +82,17 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	}
 
 	sagemClient.requestID = sagemClient.requestID + 1
-	sagemClient.currentNonce = randomInt(10000, 50000)
+	sagemClient.currentNonce = utils.RandomInt(10000, 50000)
 
 	credentialHash := fmt.Sprintf("%s:%s:%s",
 		sagemClient.username,
 		sagemClient.serverNonce,
-		stringToMD5(sagemClient.password),
+		utils.StringToMD5(sagemClient.password),
 	)
 
-	authKey := stringToMD5(
+	authKey := utils.StringToMD5(
 		fmt.Sprintf("%s:%d:%d:JSON:/cgi/json-req",
-			stringToMD5(credentialHash),
+			utils.StringToMD5(credentialHash),
 			sagemClient.requestID,
 			sagemClient.currentNonce,
 		),
@@ -109,7 +111,7 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	payloadObj.Set(authKey, "request", "auth-key")
 	jsonPayload := []byte(fmt.Sprintf("req=%s", payloadObj.String()))
 
-	req, err := http.NewRequest("POST", APIAddress, bytes.NewBuffer(jsonPayload))
+	req, _ := http.NewRequest("POST", APIAddress, bytes.NewBuffer(jsonPayload))
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -119,9 +121,9 @@ func (sagemClient *sagemClient) apiRequest(actions string) ([]byte, error) {
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	returnValue, _ := gabs.ParseJSON(body)
-	returnID := gabsString(returnValue, "reply.actions.0.callbacks.0.parameters.id")
-	returnNonce := gabsString(returnValue, "reply.actions.0.callbacks.0.parameters.nonce")
-	errorCode := gabsString(returnValue, "reply.error.code")
+	returnID := utils.GabsString(returnValue, "reply.actions.0.callbacks.0.parameters.id")
+	returnNonce := utils.GabsString(returnValue, "reply.actions.0.callbacks.0.parameters.nonce")
+	errorCode := utils.GabsString(returnValue, "reply.error.code")
 
 	if returnID != "null" && returnNonce != "null" {
 		sagemClient.sessionID, _ = strconv.Atoi(returnID)
@@ -156,23 +158,32 @@ func (sagemClient *sagemClient) getXpaths(xpaths []string) ([]byte, error) {
 	return sagemClient.apiRequest(xpathReq)
 }
 
-func (comhemc2 *comhemc2) ClearStats() {
-	comhemc2.stats = nil
+func (comhemc2 *Modem) ClearStats() {
+	comhemc2.Stats = nil
 }
 
-func (comhemc2 *comhemc2) Type() string {
-	return "DOCSIS"
+func (comhemc2 *Modem) Type() string {
+	return utils.TypeDocsis
 }
 
-func (comhemc2 *comhemc2) ParseStats() (modemStats, error) {
-	if comhemc2.stats == nil {
+func (comhemc2 *Modem) ParseStats() (utils.ModemStats, error) {
+	if comhemc2.Stats == nil {
 		timeStart := time.Now().UnixNano() / int64(time.Millisecond)
 
 		if comhemc2.sagemClient == nil {
+			if comhemc2.Username == "" {
+				comhemc2.Username = "admin"
+			}
+			if comhemc2.Password == "" {
+				comhemc2.Password = "admin"
+			}
+			if comhemc2.IPAddress == "" {
+				comhemc2.IPAddress = "192.168.10.1"
+			}
 			comhemc2.sagemClient = &sagemClient{
 				host:         comhemc2.IPAddress,
-				username:     comhemc2.username,
-				password:     comhemc2.password,
+				username:     comhemc2.Username,
+				password:     comhemc2.Password,
 				currentNonce: 0,
 				sessionID:    0,
 				requestID:    -1,
@@ -184,66 +195,66 @@ func (comhemc2 *comhemc2) ParseStats() (modemStats, error) {
 			"Device/Docsis/CableModem/Downstreams",
 		})
 		if err != nil {
-			return modemStats{}, err
+			return utils.ModemStats{}, err
 		}
 
 		fetchTime := (time.Now().UnixNano() / int64(time.Millisecond)) - timeStart
 
-		comhemc2.fetchTime = fetchTime
-		comhemc2.stats = channelDataReq
+		comhemc2.FetchTime = fetchTime
+		comhemc2.Stats = channelDataReq
 	}
 
-	var downChannels []modemChannel
-	var upChannels []modemChannel
+	var downChannels []utils.ModemChannel
+	var upChannels []utils.ModemChannel
 
-	jsonParsed, err := gabs.ParseJSON(comhemc2.stats)
+	jsonParsed, err := gabs.ParseJSON(comhemc2.Stats)
 	if err != nil {
-		return modemStats{}, err
+		return utils.ModemStats{}, err
 	}
 
 	reply := jsonParsed.Path("reply")
 	for _, action := range reply.S("actions").Children() {
-		query := gabsString(action, "callbacks.0.xpath")
+		query := utils.GabsString(action, "callbacks.0.xpath")
 		channels := action.Path("callbacks.0.parameters")
 
 		if query == "Device/Docsis/CableModem/Upstreams" {
 			for _, channelData := range channels.S("value").Children() {
-				upChannels = append(upChannels, modemChannel{
-					channelID: gabsInt(channelData, "ChannelID"),
-					channel:   gabsInt(channelData, "uid"),
-					frequency: gabsInt(channelData, "Frequency"),
-					power:     int(gabsFloat(channelData, "PowerLevel") * 10),
+				upChannels = append(upChannels, utils.ModemChannel{
+					ChannelID: utils.GabsInt(channelData, "ChannelID"),
+					Channel:   utils.GabsInt(channelData, "uid"),
+					Frequency: utils.GabsInt(channelData, "Frequency"),
+					Power:     int(utils.GabsFloat(channelData, "PowerLevel") * 10),
 				})
 			}
 
 		} else if query == "Device/Docsis/CableModem/Downstreams" {
 			for _, channelData := range channels.S("value").Children() {
-				modulation := gabsString(channelData, "Modulation")
+				modulation := utils.GabsString(channelData, "Modulation")
 				var scheme string
 				scheme = "SC-QAM"
 				if modulation == "256-QAM/4K-QAM" {
 					scheme = "OFDM"
 				}
 
-				downChannels = append(downChannels, modemChannel{
-					channelID:  gabsInt(channelData, "ChannelID"),
-					channel:    gabsInt(channelData, "uid"),
-					frequency:  gabsInt(channelData, "Frequency"),
-					snr:        int(gabsFloat(channelData, "SNR") * 10),
-					power:      int(gabsFloat(channelData, "PowerLevel") * 10),
-					prerserr:   gabsInt(channelData, "CorrectableCodewords"),
-					postrserr:  gabsInt(channelData, "UncorrectableCodewords"),
-					modulation: modulation,
-					scheme:     scheme,
+				downChannels = append(downChannels, utils.ModemChannel{
+					ChannelID:  utils.GabsInt(channelData, "ChannelID"),
+					Channel:    utils.GabsInt(channelData, "uid"),
+					Frequency:  utils.GabsInt(channelData, "Frequency"),
+					Snr:        int(utils.GabsFloat(channelData, "SNR") * 10),
+					Power:      int(utils.GabsFloat(channelData, "PowerLevel") * 10),
+					Prerserr:   utils.GabsInt(channelData, "CorrectableCodewords"),
+					Postrserr:  utils.GabsInt(channelData, "UncorrectableCodewords"),
+					Modulation: modulation,
+					Scheme:     scheme,
 				})
 			}
 		}
 
 	}
 
-	return modemStats{
-		upChannels:   upChannels,
-		downChannels: downChannels,
-		fetchTime:    comhemc2.fetchTime,
+	return utils.ModemStats{
+		UpChannels:   upChannels,
+		DownChannels: downChannels,
+		FetchTime:    comhemc2.FetchTime,
 	}, nil
 }

@@ -1,4 +1,4 @@
-package main
+package superhub4
 
 import (
 	"encoding/json"
@@ -6,39 +6,44 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/msh100/modem-stats/utils"
 )
 
-type superhub4 struct {
+type Modem struct {
 	IPAddress string
-	stats     []byte
-	fetchTime int64
+	Stats     []byte
+	FetchTime int64
 }
 
-func (sh4 *superhub4) ClearStats() {
-	sh4.stats = nil
+func (sh4 *Modem) ClearStats() {
+	sh4.Stats = nil
 }
 
-func (sh4 *superhub4) Type() string {
-	return "DOCSIS"
+func (sh4 *Modem) Type() string {
+	return utils.TypeDocsis
 }
 
-func (sh4 *superhub4) fetchURL() string {
+func (sh4 *Modem) fetchURL() string {
+	if sh4.IPAddress == "" {
+		sh4.IPAddress = "192.168.100.1"
+	}
 	return fmt.Sprintf("http://%s/php/ajaxGet_device_networkstatus_data.php", sh4.IPAddress)
 }
 
-func (sh4 *superhub4) ParseStats() (modemStats, error) {
-	if sh4.stats == nil {
+func (sh4 *Modem) ParseStats() (utils.ModemStats, error) {
+	if sh4.Stats == nil {
 		var err error
-		sh4.stats, sh4.fetchTime, err = simpleHTTPFetch(sh4.fetchURL())
+		sh4.Stats, sh4.FetchTime, err = utils.SimpleHTTPFetch(sh4.fetchURL())
 		if err != nil {
-			return modemStats{}, err
+			return utils.ModemStats{}, err
 		}
 	}
 
 	var errstrings []string
 
 	var arr []string
-	json.Unmarshal([]byte(sh4.stats), &arr)
+	json.Unmarshal([]byte(sh4.Stats), &arr)
 
 	downRate, _ := strconv.Atoi(arr[11])
 	downBurst, _ := strconv.Atoi(arr[12])
@@ -46,16 +51,16 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 	upBurst, _ := strconv.Atoi(arr[16])
 
 	if downRate == 0 || downBurst == 0 || upRate == 0 || upBurst == 0 {
-		error := fmt.Errorf("Got nil values for speed config %d,%d,%d,%d", downRate, downBurst, upRate, upBurst)
+		error := fmt.Errorf("got nil values for speed config %d,%d,%d,%d", downRate, downBurst, upRate, upBurst)
 		errstrings = append(errstrings, error.Error())
 	}
 
 	var downChannelsData [][]string
 	json.Unmarshal([]byte(arr[20]), &downChannelsData)
-	var downChannels []modemChannel
+	var downChannels []utils.ModemChannel
 	for index, downChannelData := range downChannelsData {
 		if len(downChannelData) != 9 {
-			error := fmt.Errorf("Abnormal down channel length, expected 9, got %d", len(downChannelData))
+			error := fmt.Errorf("abnormal down channel length, expected 9, got %d", len(downChannelData))
 			errstrings = append(errstrings, error.Error())
 			break
 		}
@@ -70,26 +75,26 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 		postrserr, _ := strconv.Atoi(downChannelData[8])
 
 		if channelID < 1 || channelID > 1024 {
-			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			error := fmt.Errorf("abnormal channel ID, got %d", channelID)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
 		if powerint > 2000 || powerint < -2000 {
-			error := fmt.Errorf("Power level for 3.0 channel %d is abnormal, got %d", channelID, powerint)
+			error := fmt.Errorf("power level for 3.0 channel %d is abnormal, got %d", channelID, powerint)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
 
-		downChannels = append(downChannels, modemChannel{
-			channelID:  channelID,
-			channel:    index + 1,
-			frequency:  frequency,
-			snr:        snrint,
-			power:      powerint,
-			prerserr:   prerserr,
-			postrserr:  postrserr,
-			modulation: downChannelData[4],
-			scheme:     "SC-QAM",
+		downChannels = append(downChannels, utils.ModemChannel{
+			ChannelID:  channelID,
+			Channel:    index + 1,
+			Frequency:  frequency,
+			Snr:        snrint,
+			Power:      powerint,
+			Prerserr:   prerserr,
+			Postrserr:  postrserr,
+			Modulation: downChannelData[4],
+			Scheme:     "SC-QAM",
 		})
 	}
 
@@ -97,7 +102,7 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 	json.Unmarshal([]byte(arr[23]), &down31ChannelsData)
 	for index, down31ChannelData := range down31ChannelsData {
 		if len(down31ChannelData) != 11 {
-			error := fmt.Errorf("Abnormal 3.1 down channel length, expected 11, got %d", len(down31ChannelData))
+			error := fmt.Errorf("abnormal 3.1 down channel length, expected 11, got %d", len(down31ChannelData))
 			errstrings = append(errstrings, error.Error())
 			break
 		}
@@ -112,35 +117,35 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 		postrserr, _ := strconv.Atoi(down31ChannelData[10])
 
 		if channelID < 1 || channelID > 1024 {
-			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			error := fmt.Errorf("abnormal channel ID, got %d", channelID)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
 		if powerint > 2000 || powerint < -2000 {
-			error := fmt.Errorf("Power level for 3.1 channel %d is abnormal, got %d", channelID, powerint)
+			error := fmt.Errorf("power level for 3.1 channel %d is abnormal, got %d", channelID, powerint)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
 
-		downChannels = append(downChannels, modemChannel{
-			channelID:  channelID,
-			channel:    index + 1,
-			frequency:  frequency,
-			snr:        snrint,
-			power:      powerint,
-			prerserr:   prerserr,
-			postrserr:  postrserr,
-			modulation: down31ChannelData[4],
-			scheme:     "OFDM",
+		downChannels = append(downChannels, utils.ModemChannel{
+			ChannelID:  channelID,
+			Channel:    index + 1,
+			Frequency:  frequency,
+			Snr:        snrint,
+			Power:      powerint,
+			Prerserr:   prerserr,
+			Postrserr:  postrserr,
+			Modulation: down31ChannelData[4],
+			Scheme:     "OFDM",
 		})
 	}
 
 	var upChannelsData [][]string
 	json.Unmarshal([]byte(arr[21]), &upChannelsData)
-	var upChannels []modemChannel
+	var upChannels []utils.ModemChannel
 	for index, upChannelData := range upChannelsData {
 		if len(upChannelData) != 10 {
-			error := fmt.Errorf("Abnormal up channel length, expected 10, got %d", len(upChannelData))
+			error := fmt.Errorf("abnormal up channel length, expected 10, got %d", len(upChannelData))
 			errstrings = append(errstrings, error.Error())
 			break
 		}
@@ -151,21 +156,21 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 		powerint := int(power * 10)
 
 		if channelID < 1 || channelID > 1024 {
-			error := fmt.Errorf("Abnormal channel ID, got %d", channelID)
+			error := fmt.Errorf("abnormal channel ID, got %d", channelID)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
 		if powerint > 2000 || powerint < -2000 {
-			error := fmt.Errorf("Power level for up channel %d is abnormal, got %d", channelID, powerint)
+			error := fmt.Errorf("power level for up channel %d is abnormal, got %d", channelID, powerint)
 			errstrings = append(errstrings, error.Error())
 			break
 		}
 
-		upChannels = append(upChannels, modemChannel{
-			channelID: channelID,
-			channel:   index + 1,
-			frequency: frequency,
-			power:     powerint,
+		upChannels = append(upChannels, utils.ModemChannel{
+			ChannelID: channelID,
+			Channel:   index + 1,
+			Frequency: frequency,
+			Power:     powerint,
 		})
 	}
 
@@ -175,21 +180,21 @@ func (sh4 *superhub4) ParseStats() (modemStats, error) {
 		returnerr = errors.New(strings.Join(errstrings, "\n"))
 	}
 
-	return modemStats{
-		configs: []modemConfig{
+	return utils.ModemStats{
+		Configs: []utils.ModemConfig{
 			{
-				config:   "downstream",
-				maxrate:  downRate,
-				maxburst: downBurst,
+				Config:   "downstream",
+				Maxrate:  downRate,
+				Maxburst: downBurst,
 			},
 			{
-				config:   "upstream",
-				maxrate:  upRate,
-				maxburst: upBurst,
+				Config:   "upstream",
+				Maxrate:  upRate,
+				Maxburst: upBurst,
 			},
 		},
-		upChannels:   upChannels,
-		downChannels: downChannels,
-		fetchTime:    sh4.fetchTime,
+		UpChannels:   upChannels,
+		DownChannels: downChannels,
+		FetchTime:    sh4.FetchTime,
 	}, returnerr
 }

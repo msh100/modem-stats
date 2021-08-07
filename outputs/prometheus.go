@@ -1,4 +1,4 @@
-package main
+package outputs
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/msh100/modem-stats/utils"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -26,128 +27,128 @@ type PrometheusExporter struct {
 	upNoise         *prometheus.Desc
 	upAttenuation   *prometheus.Desc
 
-	docsisModem docsisModem
+	docsisModem utils.DocsisModem
 }
 
 func (p *PrometheusExporter) Collect(ch chan<- prometheus.Metric) {
-	resetStats(p.docsisModem)
-	modemStats, _ := fetchStats(p.docsisModem)
+	utils.ResetStats(p.docsisModem)
+	modemStats, _ := utils.FetchStats(p.docsisModem)
 
-	for _, c := range modemStats.downChannels {
+	for _, c := range modemStats.DownChannels {
 		var labels []string
 
-		if modemStats.modemType == "VDSL" {
+		if modemStats.ModemType == utils.TypeVDSL {
 			labels = []string{
-				strconv.Itoa(c.channelID),
+				strconv.Itoa(c.ChannelID),
 			}
 
 			ch <- prometheus.MustNewConstMetric(
 				p.downNoise,
 				prometheus.GaugeValue,
-				float64(c.noise),
+				float64(c.Noise),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.downAttenuation,
 				prometheus.GaugeValue,
-				float64(c.attenuation),
+				float64(c.Attenuation),
 				labels...,
 			)
 		} else {
 			labels = []string{
-				strconv.Itoa(c.channel),
-				strconv.Itoa(c.channelID),
-				c.modulation,
-				c.scheme,
+				strconv.Itoa(c.Channel),
+				strconv.Itoa(c.ChannelID),
+				c.Modulation,
+				c.Scheme,
 			}
 
 			ch <- prometheus.MustNewConstMetric(
 				p.downFrequency,
 				prometheus.GaugeValue,
-				float64(c.frequency),
+				float64(c.Frequency),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.downPower,
 				prometheus.GaugeValue,
-				float64(c.power),
+				float64(c.Power),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.downSNR,
 				prometheus.GaugeValue,
-				float64(c.snr),
+				float64(c.Snr),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.downPreRS,
 				prometheus.GaugeValue,
-				float64(c.prerserr),
+				float64(c.Prerserr),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.downPostRS,
 				prometheus.GaugeValue,
-				float64(c.postrserr),
+				float64(c.Postrserr),
 				labels...,
 			)
 		}
 	}
 
-	for _, c := range modemStats.upChannels {
+	for _, c := range modemStats.UpChannels {
 		var labels []string
 
-		if modemStats.modemType == "VDSL" {
+		if modemStats.ModemType == utils.TypeVDSL {
 			labels = []string{
-				strconv.Itoa(c.channelID),
+				strconv.Itoa(c.ChannelID),
 			}
 
 			ch <- prometheus.MustNewConstMetric(
 				p.upNoise,
 				prometheus.GaugeValue,
-				float64(c.noise),
+				float64(c.Noise),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.upAttenuation,
 				prometheus.GaugeValue,
-				float64(c.attenuation),
+				float64(c.Attenuation),
 				labels...,
 			)
 		} else {
 			labels = []string{
-				strconv.Itoa(c.channel),
-				strconv.Itoa(c.channelID),
+				strconv.Itoa(c.Channel),
+				strconv.Itoa(c.ChannelID),
 			}
 
 			ch <- prometheus.MustNewConstMetric(
 				p.upPower,
 				prometheus.GaugeValue,
-				float64(c.power),
+				float64(c.Power),
 				labels...,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				p.upFrequency,
 				prometheus.GaugeValue,
-				float64(c.frequency),
+				float64(c.Frequency),
 				labels...,
 			)
 		}
 	}
 
-	for _, config := range modemStats.configs {
+	for _, config := range modemStats.Configs {
 		ch <- prometheus.MustNewConstMetric(
 			p.maxrate,
 			prometheus.GaugeValue,
-			float64(config.maxrate),
-			config.config,
+			float64(config.Maxrate),
+			config.Config,
 		)
-		if config.maxburst != 0 {
+		if config.Maxburst != 0 {
 			ch <- prometheus.MustNewConstMetric(
 				p.maxburst,
 				prometheus.GaugeValue,
-				float64(config.maxburst),
-				config.config,
+				float64(config.Maxburst),
+				config.Config,
 			)
 		}
 	}
@@ -155,7 +156,7 @@ func (p *PrometheusExporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		p.fetchtime,
 		prometheus.GaugeValue,
-		float64(modemStats.fetchTime),
+		float64(modemStats.FetchTime),
 	)
 }
 
@@ -176,12 +177,12 @@ func (p *PrometheusExporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- p.upAttenuation
 }
 
-func ProExporter(docsisModem docsisModem) *PrometheusExporter {
+func ProExporter(docsisModem utils.DocsisModem) *PrometheusExporter {
 	namespace := "modemstats"
 	downLabels := []string{}
 	upLabels := []string{}
 
-	if docsisModem.Type() == "VDSL" {
+	if docsisModem.Type() == utils.TypeVDSL {
 		downLabels = []string{"id"}
 		upLabels = []string{"id"}
 	} else {
@@ -278,7 +279,7 @@ func ProExporter(docsisModem docsisModem) *PrometheusExporter {
 	}
 }
 
-func modemStatsPrometheus(modem docsisModem, port int) {
+func Prometheus(modem utils.DocsisModem, port int) {
 	prometheus.Unregister(prometheus.NewGoCollector())
 	exporter := ProExporter(modem)
 	prometheus.MustRegister(exporter)
