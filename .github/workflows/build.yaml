@@ -20,8 +20,8 @@ jobs:
     - name: Run build
       run: |
         mkdir output/
-        go build -o output/modem-stats.x86 sh-stats/*.go
-        GOARCH=arm GOARM=5 go build -o output/modem-stats.arm5 sh-stats/*.go
+        go build -o output/modem-stats.x86 main.go
+        GOARCH=arm GOARM=5 go build -o output/modem-stats.arm5 main.go
 
     - name: Push to B2
       uses: jakejarvis/s3-sync-action@master
