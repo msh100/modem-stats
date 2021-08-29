@@ -13,6 +13,7 @@ import (
 	"github.com/msh100/modem-stats/modems/skyhub2"
 	"github.com/msh100/modem-stats/modems/superhub3"
 	"github.com/msh100/modem-stats/modems/superhub4"
+	"github.com/msh100/modem-stats/modems/ubee"
 	"github.com/msh100/modem-stats/outputs"
 	"github.com/msh100/modem-stats/utils"
 )
@@ -77,6 +78,12 @@ func main() {
 		}
 	case "superhub3":
 		modem = &superhub3.Modem{
+			IPAddress: utils.Getenv("ROUTER_IP", commandLineOpts.ModemIP),
+			Stats:     body,
+			FetchTime: fetchTime,
+		}
+	case "ubee":
+		modem = &ubee.Modem{
 			IPAddress: utils.Getenv("ROUTER_IP", commandLineOpts.ModemIP),
 			Stats:     body,
 			FetchTime: fetchTime,

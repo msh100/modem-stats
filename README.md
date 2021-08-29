@@ -177,6 +177,10 @@ Ziggo Connectbox:**
  * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
  * `ROUTER_PASS` or `--password=password` (defaults to `sky`)
 
+**Ubee:**
+ * `ROUTER_TYPE=ubee`
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+
 
 ### Example Usage
 
