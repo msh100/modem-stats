@@ -30,15 +30,15 @@ func (ubee *Modem) fetchURL() string {
 }
 
 type dsChannel struct {
-	Type       int `json:"ds_type,string"`
-	ID         int `json:"ds_id,string"`
-	Frequency  int `json:"ds_freq,string"`
-	Width      int `json:"ds_width,string"`
-	Power      int `json:"ds_power,string"`
-	SNR        int `json:"ds_snr,string"`
-	Modulation int `json:"ds_modulation,string"`
-	PreRS      int `json:"ds_correct,string"`
-	PostRS     int `json:"ds_uncorrect,string"`
+	Type       int     `json:"ds_type,string"`
+	ID         int     `json:"ds_id,string"`
+	Frequency  int     `json:"ds_freq,string"`
+	Width      int     `json:"ds_width,string"`
+	Power      int     `json:"ds_power,string"`
+	SNR        float32 `json:"ds_snr,string"`
+	Modulation int     `json:"ds_modulation,string"`
+	PreRS      int     `json:"ds_correct,string"`
+	PostRS     int     `json:"ds_uncorrect,string"`
 }
 
 type usChannel struct {
@@ -101,11 +101,17 @@ func (ubee *Modem) ParseStats() (utils.ModemStats, error) {
 	}
 
 	for id, downChannelData := range results.DownstreamChannels {
+		// For some reason the 3.1 channels are a float that needs to be multiplied by 10
+		if downChannelData.Type == 277 {
+			downChannelData.SNR = downChannelData.SNR * 10
+		}
+		snr := int(downChannelData.SNR)
+
 		downChannels = append(downChannels, utils.ModemChannel{
 			ChannelID:  downChannelData.ID,
 			Channel:    id + 1,
 			Frequency:  downChannelData.Frequency,
-			Snr:        downChannelData.SNR,
+			Snr:        snr,
 			Power:      downChannelData.Power,
 			Prerserr:   downChannelData.PreRS,
 			Postrserr:  downChannelData.PostRS,

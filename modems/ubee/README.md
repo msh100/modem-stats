@@ -49,6 +49,7 @@ Each object in the array contains the following fields:
  * `ds_width` - Channel width.
  * `ds_power` - Channel power in dBmV.
  * `ds_snr` - Signal to noise ratio in dB.
+   Note on 3.0 channels this is multipled by 10 and provided as an int.
  * `ds_modulation` - Channel modulation, mapped in `ds_modulation`.
  * `ds_correct` - Corrected codeword count.
  * `ds_uncorrect` - Uncorrectable codewords count.
