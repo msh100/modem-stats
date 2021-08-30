@@ -56,6 +56,16 @@ type resultsStruct struct {
 	UpstreamChannels   []usChannel `json:"cm_conn_us_gourpObj"`
 }
 
+func (ubee *Modem) extractStats() resultsStruct {
+	var re = regexp.MustCompile(`var cm_conn_json = '([^']+)';`)
+	match := re.FindAllStringSubmatch(string(ubee.Stats), 1)
+
+	var results resultsStruct
+	json.Unmarshal([]byte(match[0][1]), &results)
+
+	return results
+}
+
 func (ubee *Modem) ParseStats() (utils.ModemStats, error) {
 	if ubee.Stats == nil {
 		var err error
@@ -65,14 +75,9 @@ func (ubee *Modem) ParseStats() (utils.ModemStats, error) {
 		}
 	}
 
-	var re = regexp.MustCompile(`var cm_conn_json = '([^']+)';`)
-	match := re.FindAllStringSubmatch(string(ubee.Stats), -1)
-
+	results := ubee.extractStats()
 	var downChannels []utils.ModemChannel
 	var upChannels []utils.ModemChannel
-
-	var results resultsStruct
-	json.Unmarshal([]byte(match[0][1]), &results)
 
 	var downModulationMap = []string{
 		1: "Unknown",
@@ -85,14 +90,6 @@ func (ubee *Modem) ParseStats() (utils.ModemStats, error) {
 		8: "QAM512",
 	}
 
-	/*var upModulationMap = []string{
-		0: "Unknown",
-		1: "TDMA",
-		2: "ATDMA",
-		3: "SCDMA",
-		4: "TDMA AND ATDMA",
-	}*/
-
 	var interfaceTypeMap = []string{
 		128: "SC-QAM",
 		129: "ATDMA",
@@ -101,7 +98,6 @@ func (ubee *Modem) ParseStats() (utils.ModemStats, error) {
 	}
 
 	for id, downChannelData := range results.DownstreamChannels {
-		// For some reason the 3.1 channels are a float that needs to be multiplied by 10
 		if downChannelData.Type == 277 {
 			downChannelData.SNR = downChannelData.SNR * 10
 		}
