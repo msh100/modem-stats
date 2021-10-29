@@ -73,3 +73,40 @@ func FetchStats(router DocsisModem) (ModemStats, error) {
 func ResetStats(router DocsisModem) {
 	router.ClearStats()
 }
+
+type HttpResult struct {
+	Index int
+	Res   http.Response
+	Err   error
+}
+
+func BoundedParallelGet(urls []string, concurrencyLimit int) []HttpResult {
+	semaphoreChan := make(chan struct{}, concurrencyLimit)
+	resultsChan := make(chan *HttpResult)
+
+	defer func() {
+		close(semaphoreChan)
+		close(resultsChan)
+	}()
+
+	for i, url := range urls {
+		go func(i int, url string) {
+			semaphoreChan <- struct{}{}
+			res, err := http.Get(url)
+			result := &HttpResult{i, *res, err}
+			resultsChan <- result
+			<-semaphoreChan
+		}(i, url)
+	}
+
+	var results []HttpResult
+	for {
+		result := <-resultsChan
+		results = append(results, *result)
+		if len(results) == len(urls) {
+			break
+		}
+	}
+
+	return results
+}

@@ -164,6 +164,10 @@ Ziggo Connectbox:**
  * `ROUTER_TYPE=superhub4` or `--modem=superhub4`
  * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
+**Virgin Media Superhub 5:**
+ * `ROUTER_TYPE=superhub5` or `--modem=superhub5`
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+
 **Com Hem WiFi Hub C2:**
 (This is likely to work on any Sagemcom DOCSIS modem)
  * `ROUTER_TYPE=comhemc2` or `--modem=comhemc2`
