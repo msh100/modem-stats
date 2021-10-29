@@ -30,7 +30,7 @@ Each channel is made up of:
  - `channelId` - Channel ID
  - `frequency` - Frequench in hertz
  - `power` - Power in dBmV
- - `modulation` - ****
+ - `modulation` - Channel modulation (map below)
  - `snr` - Signal to Noise ratio in dB
  - `rxMer` - Signal to Noise ratio in dB (again)
  - `correctedErrors` - Count of corrected codewords
@@ -72,11 +72,11 @@ Each channel is made up of:
  - `frequency` - Frequench in hertz
  - `lockStatus` - (Bool) Channel locked
  - `power` - Power in dBmV
- - `modulation` - ****
- - `t1Timeout` - ****
- - `t2Timeout` - ****
- - `t3Timeout` - ****
- - `t4Timeout` - ****
+ - `modulation` - Channel modulation (map below)
+ - `t1Timeout` - T1 Timeout count
+ - `t2Timeout` - T2 Timeout count
+ - `t3Timeout` - T3 Timeout count
+ - `t4Timeout` - T4 Timeout count
  - `channelType` - Type of upstream channel
 
 For example:
@@ -121,4 +121,24 @@ Example:
     "scheduleType": "undefined"
   }
 }
+```
+
+### Modulation Map
+
+Modulation is mapped by `/common/js/networkstatus.js` in the following ways:
+
+```javascript
+var MODULATION_MAP = {
+    qpsk        : "QPSK",
+    qam_8       : "QAM 8",
+    qam_16      : "QAM 16",
+    qam_32      : "QAM 32",
+    qam_64      : "QAM 64",
+    qam_128     : "QAM 128",
+    qam_256     : "QAM 256",
+    other       : "rs46",
+    unsupported : "c_st30",
+    error       : "c_st30",
+    unknown     : "c_cd04" // 'Unknown'
+};
 ```

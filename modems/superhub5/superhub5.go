@@ -103,6 +103,12 @@ func (sh5 *Modem) ParseStats() (utils.ModemStats, error) {
 	json.Unmarshal(sh5.Stats, &results)
 
 	for index, downstream := range results.Downstream.Channels {
+		// Note: I have yet to see a D3.1 channel on a Superhub 5 and therefore
+		// am not certain this logic even works. It's likely this is broken and
+		// needs fixing.
+		//
+		// As this comes from a map that doesn't guarentee to be in the format
+		// of QAM 256, this will probably break.
 		re := regexp.MustCompile("[0-9]+")
 		qamSize := re.FindString(downstream.Modulation)
 		qamSizeInt, err := strconv.Atoi(qamSize)
@@ -110,9 +116,6 @@ func (sh5 *Modem) ParseStats() (utils.ModemStats, error) {
 			panic(err)
 		}
 
-		// Note: I have yet to see a D3.1 channel on a Superhub 5 and therefore
-		// am not certain this logic even works. It's likely this is broken and
-		// needs fixing.
 		scheme := "SC-QAM"
 		if qamSizeInt > 256 {
 			scheme = "OFDM"

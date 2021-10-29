@@ -128,8 +128,9 @@ dependencies.
 Upon push to master, this repository builds and pushed binaries.
 These can be downloaded from:
 
- * [amd64](https://b2.msh100.uk/file/modem-stats/modem-stats.x86)
- * [ARM5](https://b2.msh100.uk/file/modem-stats/modem-stats.arm5)
+ * [Linux amd64](https://b2.msh100.uk/file/modem-stats/modem-stats.x86)
+ * [Linux ARM5](https://b2.msh100.uk/file/modem-stats/modem-stats.arm5)
+ * [MacOS ARM64](https://b2.msh100.uk/file/modem-stats/modem-stats.macos-arm64)
 
 More architectures can be added on request.
 
