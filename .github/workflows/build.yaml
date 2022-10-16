@@ -17,12 +17,22 @@ jobs:
       with:
         go-version: '1.16.0'
 
-    - name: Run build
+    - name: Extract branch name
+      shell: bash
       run: |
         OBJECT_SUFFIX=''
+        DOCKER_TAG="latest"
         if [[ "${GITHUB_REF_NAME}" != "main" ]]; then
             OBJECT_SUFFIX=".${GITHUB_REF_NAME}"
+            DOCKER_TAG="${GITHUB_REF_NAME}"
         fi
+        echo "##[set-output name=object_suffix;]$(echo ${OBJECT_SUFFIX})"
+        echo "##[set-output name=docker_tag;]$(echo ${DOCKER_TAG})"
+      id: extract_branch
+
+    - name: Run build
+      run: |
+        OBJECT_SUFFIX="${{ steps.extract_branch.outputs.object_suffix }}"
         mkdir output/
         go build -o "output/modem-stats${OBJECT_SUFFIX}.x86" main.go
         GOARCH=arm GOARM=5 go build -o "output/modem-stats${OBJECT_SUFFIX}.arm5" main.go
@@ -43,4 +53,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: msh100/modem-stats
-        tags: latest
+        tags: ${{ steps.extract_branch.outputs.docker_tag }}
