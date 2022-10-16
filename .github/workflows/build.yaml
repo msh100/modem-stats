@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout source
+      uses: actions/checkout@v3
 
     - name: Setup Go
       uses: actions/setup-go@v2
@@ -26,19 +27,19 @@ jobs:
             OBJECT_SUFFIX=".${GITHUB_REF_NAME}"
             DOCKER_TAG="${GITHUB_REF_NAME}"
         fi
-        echo "##[set-output name=object_suffix;]$(echo ${OBJECT_SUFFIX})"
-        echo "##[set-output name=docker_tag;]$(echo ${DOCKER_TAG})"
+        echo "object_suffix=${OBJECT_SUFFIX}" >> $GITHUB_ENV
+        echo "docker_tag=${DOCKER_TAG}" >> $GITHUB_ENV
       id: extract_branch
 
-    - name: Run build
+    - name: Run Go builds
       run: |
-        OBJECT_SUFFIX="${{ steps.extract_branch.outputs.object_suffix }}"
+        OBJECT_SUFFIX="${{ env.object_suffix }}"
         mkdir output/
         go build -o "output/modem-stats${OBJECT_SUFFIX}.x86" main.go
         GOARCH=arm GOARM=5 go build -o "output/modem-stats${OBJECT_SUFFIX}.arm5" main.go
         GOOS=darwin GOARCH=arm64 go build -o "output/modem-stats${OBJECT_SUFFIX}.macos-arm64" main.go
 
-    - name: Push to B2
+    - name: Push binaries to B2
       uses: jakejarvis/s3-sync-action@master
       env:
         AWS_S3_BUCKET: modem-stats
@@ -59,7 +60,7 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
-        tags: msh100/modem-stats:${{ steps.extract_branch.outputs.docker_tag }}
+        tags: msh100/modem-stats:${{ env.docker_tag }}
         build-args: |
-          OBJECT_SUFFIX=${{ steps.extract_branch.outputs.object_suffix }}
+          OBJECT_SUFFIX=${{ env.object_suffix }}
         context: .
