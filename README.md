@@ -125,7 +125,7 @@ dependencies.
 
 ### Downloading
 
-Upon push to master, this repository builds and pushed binaries.
+Upon push to main, this repository builds and pushed binaries.
 These can be downloaded from:
 
  * [Linux amd64](https://b2.msh100.uk/file/modem-stats/modem-stats.x86)
