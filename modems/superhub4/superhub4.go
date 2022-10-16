@@ -174,6 +174,41 @@ func (sh4 *Modem) ParseStats() (utils.ModemStats, error) {
 		})
 	}
 
+	var channelOffset int = len(upChannels)
+	var up31ChannelsData [][]string
+	json.Unmarshal([]byte(arr[24]), &up31ChannelsData)
+	for index, up31ChannelData := range up31ChannelsData {
+		if len(up31ChannelData) != 10 {
+			error := fmt.Errorf("abnormal 3.1 up channel length, expected 10, got %d", len(up31ChannelData))
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
+		channelID, _ := strconv.Atoi(up31ChannelData[0])
+		frequency, _ := strconv.ParseFloat(up31ChannelData[7], 64)
+		frequencyInt := int(frequency * 1000000)
+		power, _ := strconv.ParseFloat(up31ChannelData[2], 64)
+		powerint := int(power * 10)
+
+		if channelID < 1 || channelID > 1024 {
+			error := fmt.Errorf("abnormal 3.1 channel ID, got %d", channelID)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+		if powerint > 2000 || powerint < -2000 {
+			error := fmt.Errorf("power level for up 3.1 channel %d is abnormal, got %d", channelID, powerint)
+			errstrings = append(errstrings, error.Error())
+			break
+		}
+
+		upChannels = append(upChannels, utils.ModemChannel{
+			ChannelID: channelID,
+			Channel:   channelOffset + index + 1,
+			Frequency: frequencyInt,
+			Power:     powerint,
+		})
+	}
+
 	var returnerr error
 	returnerr = nil
 	if len(errstrings) > 0 {

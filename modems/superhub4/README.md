@@ -148,3 +148,22 @@ Example:
 8. Power level
 9. Pre RS Errors
 10. Post RS Errors
+
+
+#### 3.1 Upstream Channels
+
+Example:
+```json
+["14","10.0","37.0","2K","QAM8","OFDMA","200","53.9","6","0"]
+```
+
+0. Channel ID
+1. Channel Width
+2. Power Level
+3. FFT Type
+4. Modulation
+5. Channel Type
+6. Number of subcarriers
+7. First active subcarrier (MHz) **Note:** UI says this is Hz, but this looks like an error
+8. T3 Timeouts
+9. T4 Timeouts
