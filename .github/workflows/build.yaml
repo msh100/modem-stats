@@ -62,4 +62,4 @@ jobs:
         tags: msh100/modem-stats:${{ steps.extract_branch.outputs.docker_tag }}
         build-args: |
           OBJECT_SUFFIX=${{ steps.extract_branch.outputs.object_suffix }}
-        no-cache: true
+        context: .
