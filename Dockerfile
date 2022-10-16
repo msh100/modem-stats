@@ -2,7 +2,7 @@ FROM telegraf:1.16.2 as builder
 
 ARG OBJECT_SUFFIX=''
 
-ADD "/output/modem-stats${OBJECT_SUFFIX}.x86" /modem-stats
+ADD "output/modem-stats${OBJECT_SUFFIX}.x86" /modem-stats
 RUN chmod +x /modem-stats
 
 ADD ./docker/entrypoint-msh.sh /entrypoint-msh.sh
