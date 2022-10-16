@@ -48,9 +48,10 @@ jobs:
         AWS_S3_ENDPOINT: 'https://s3.us-west-000.backblazeb2.com/'
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v1
+      uses: docker/build-push-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: msh100/modem-stats
-        tags: ${{ steps.extract_branch.outputs.docker_tag }}
+        tags: msh100/modem-stats:${{ steps.extract_branch.outputs.docker_tag }}
+        build-args: |
+          OBJECT_SUFFIX=${{ steps.extract_branch.outputs.object_suffix }}
