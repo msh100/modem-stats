@@ -20,7 +20,7 @@ jobs:
     - name: Run build
       run: |
         OBJECT_SUFFIX=''
-        if [[ "${GITHUB_REF_NAME}" != "main" ]]: then
+        if [[ "${GITHUB_REF_NAME}" != "main" ]]; then
             OBJECT_SUFFIX=".${GITHUB_REF_NAME}"
         fi
         mkdir output/
