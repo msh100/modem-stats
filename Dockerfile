@@ -3,7 +3,7 @@ FROM telegraf:1.16.2 as builder
 ARG OBJECT_SUFFIX=''
 
 ADD . /test
-CMD ls -lah test/
+RUN ls -lah test/
 
 ADD "output/modem-stats${OBJECT_SUFFIX}.x86" /modem-stats
 RUN chmod +x /modem-stats
