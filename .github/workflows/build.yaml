@@ -3,7 +3,7 @@ name: Build binaries
 on:
   push:
     branches:
-      - master
+      - '*'
 
 jobs:
   build:
@@ -19,10 +19,14 @@ jobs:
 
     - name: Run build
       run: |
+        OBJECT_SUFFIX=''
+        if [[ "${GITHUB_REF_NAME}" != "main" ]]: then
+            OBJECT_SUFFIX=".${GITHUB_REF_NAME}"
+        fi
         mkdir output/
-        go build -o output/modem-stats.x86 main.go
-        GOARCH=arm GOARM=5 go build -o output/modem-stats.arm5 main.go
-        GOOS=darwin GOARCH=arm64 go build -o output/modem-stats.macos-arm64 main.go
+        go build -o "output/modem-stats${OBJECT_SUFFIX}.x86" main.go
+        GOARCH=arm GOARM=5 go build -o "output/modem-stats${OBJECT_SUFFIX}.arm5" main.go
+        GOOS=darwin GOARCH=arm64 go build -o "output/modem-stats${OBJECT_SUFFIX}.macos-arm64" main.go
 
     - name: Push to B2
       uses: jakejarvis/s3-sync-action@master
