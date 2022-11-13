@@ -10,9 +10,9 @@ This processor is only known to work with the Virgin Media Superhub 5.
 The Superhub 5 exposes a REST API on its webserver at `/rest/v1`.
 There are 3 endpoints which interest us here:
 
- * `/rest/v1/downstream`
- * `/rest/v1/upstream`
- * `/rest/v1/serviceflows`
+ * `/rest/v1/cablemodem/downstream`
+ * `/rest/v1/cablemodem/upstream`
+ * `/rest/v1/cablemodem/serviceflows`
 
 The Superhub 5 runs at `192.168.0.1` in router mode and `192.168.100.1` in
 modem mode.
