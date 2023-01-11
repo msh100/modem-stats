@@ -51,8 +51,8 @@ func (sh3 *Modem) activeChannels() ([]int, []int) {
 }
 
 func (sh3 *Modem) activeConfigs() (int, int) {
-	downConfigRegex := regexp.MustCompile("\"1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.[0-9]*[02468].([0-9]+)\":\"1\"")
-	upConfigRegex := regexp.MustCompile("\"1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.[0-9]*[13579].([0-9]+)\":\"1\"")
+	activeConfigRegex := regexp.MustCompile("\"1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.[0-9]+.([0-9]+)\":\"1\"")
+	configRegex := regexp.MustCompile("\"1.3.6.1.4.1.4491.2.1.21.1.3.1.7.2.[0-9]+.([0-9]+)\":\"([1-2])\"")
 
 	downConfig := 0
 	upConfig := 0
@@ -60,16 +60,33 @@ func (sh3 *Modem) activeConfigs() (int, int) {
 	// If the JSON for the stats input has been beautified, this regex wont work
 	statsData := strings.ReplaceAll(string(sh3.Stats), "\": \"", "\":\"")
 
-	for _, value := range upConfigRegex.FindAllStringSubmatch(statsData, -1) {
+	var upConfigs []int
+	var downConfigs []int
+	for _, value := range configRegex.FindAllStringSubmatch(statsData, -1) {
 		thisConfig, _ := strconv.Atoi(value[1])
-		if thisConfig > upConfig {
-			upConfig = thisConfig
+		thisDirection, _ := strconv.Atoi(value[2])
+
+		if thisDirection == 1 {
+			downConfigs = append(downConfigs, thisConfig)
+		} else {
+			upConfigs = append(upConfigs, thisConfig)
 		}
 	}
-	for _, value := range downConfigRegex.FindAllStringSubmatch(statsData, -1) {
+
+	for _, value := range activeConfigRegex.FindAllStringSubmatch(statsData, -1) {
 		thisConfig, _ := strconv.Atoi(value[1])
-		if thisConfig > downConfig {
-			downConfig = thisConfig
+
+		for _, testConfig := range upConfigs {
+			if testConfig == thisConfig {
+				upConfig = testConfig
+				break
+			}
+		}
+		for _, testConfig := range downConfigs {
+			if testConfig == thisConfig {
+				downConfig = testConfig
+				break
+			}
 		}
 	}
 

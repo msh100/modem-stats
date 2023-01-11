@@ -43,17 +43,24 @@ The document has the following structure as a single dimentional object:
 
 ### Profile Speeds
 
-Initially we search for the profiles that represent both the upsteam and
-downstream speeds.
+First of all, we create a list of upstream and downsteam profiles
+
+```
+1.3.6.1.4.1.4491.2.1.21.1.3.1.7.2.$ID1.$ID2 = $DIRECTION
+```
+
+`$ID2` represents the SFID which is displayed in the Superhub web interface.
+Profile's with the `$DIRECTION` of `1` are downstream, and `2` are upstream.
+
+From here we loop over all the configs to see which is active, as represented
+by a `1` value at the following MIB:
 
 ```
 1.3.6.1.4.1.4491.2.1.21.1.3.1.8.2.$ID1.$ID2
 ```
 
-We take MIBs which have this structure and have a value of `1`.
-The highest odd number of ID1 in this result set corresponds to uplink, and the
-highest even number of ID1 corresponds to downlink.
-ID2 is the value we need.
+There should only be a single MIB for each upstream and downstream.
+From here ID2 is the value we need to determine the MaxRate and MaxBurst.
 
 ```
 1.3.6.1.4.1.4491.2.1.21.1.2.1.6.2.1.$ID2 = MaxRate
