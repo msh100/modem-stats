@@ -110,3 +110,25 @@ func BoundedParallelGet(urls []string, concurrencyLimit int) []HttpResult {
 
 	return results
 }
+
+func ExtractIntValue(valueWithUnit string) int {
+	parts := strings.Split(valueWithUnit, " ")
+	if len(parts) > 0 {
+		intValue, err := strconv.Atoi(parts[0])
+		if err == nil {
+			return intValue
+		}
+	}
+	return 0
+}
+
+func ExtractFloatValue(valueWithUnit string) float64 {
+	parts := strings.Split(valueWithUnit, " ")
+	if len(parts) > 0 {
+		floatValue, err := strconv.ParseFloat(parts[0], 64)
+		if err == nil {
+			return floatValue
+		}
+	}
+	return 0.0
+}

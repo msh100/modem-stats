@@ -186,6 +186,12 @@ Ziggo Connectbox:**
  * `ROUTER_TYPE=ubee`
  * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
+**Technicolor TC4400:**
+ * `ROUTER_TYPE=tc4400`
+ * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+ * `ROUTER_USER` or `--username=user` (defaults to `user`)
+ * `ROUTER_PASS` or `--password=password` (defaults to `password`)
+
 
 ### Example Usage
 

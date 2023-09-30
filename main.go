@@ -15,6 +15,7 @@ import (
 	"github.com/msh100/modem-stats/modems/superhub4"
 	"github.com/msh100/modem-stats/modems/superhub5"
 	"github.com/msh100/modem-stats/modems/ubee"
+	"github.com/msh100/modem-stats/modems/tc4400"
 	"github.com/msh100/modem-stats/outputs"
 	"github.com/msh100/modem-stats/utils"
 )
@@ -94,6 +95,14 @@ func main() {
 			IPAddress: utils.Getenv("ROUTER_IP", commandLineOpts.ModemIP),
 			Stats:     body,
 			FetchTime: fetchTime,
+		}
+	case "tc4400":
+		modem = &tc4400.Modem{
+			IPAddress: utils.Getenv("ROUTER_IP", commandLineOpts.ModemIP),
+			Stats:     body,
+			FetchTime: fetchTime,
+			Username:  utils.Getenv("ROUTER_USER", commandLineOpts.Username),
+			Password:  utils.Getenv("ROUTER_PASS", commandLineOpts.Password),
 		}
 	default:
 		log.Fatalf("unknown modem: %s", routerType)
