@@ -10,12 +10,11 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/msh100/modem-stats/modems/comhemc2"
-	"github.com/msh100/modem-stats/modems/skyhub2"
 	"github.com/msh100/modem-stats/modems/superhub3"
 	"github.com/msh100/modem-stats/modems/superhub4"
 	"github.com/msh100/modem-stats/modems/superhub5"
-	"github.com/msh100/modem-stats/modems/ubee"
 	"github.com/msh100/modem-stats/modems/tc4400"
+	"github.com/msh100/modem-stats/modems/ubee"
 	"github.com/msh100/modem-stats/outputs"
 	"github.com/msh100/modem-stats/utils"
 )
@@ -64,14 +63,6 @@ func main() {
 		}
 	case "comhemc2":
 		modem = &comhemc2.Modem{
-			IPAddress: utils.Getenv("ROUTER_IP", commandLineOpts.ModemIP),
-			Stats:     body,
-			FetchTime: fetchTime,
-			Username:  utils.Getenv("ROUTER_USER", commandLineOpts.Username),
-			Password:  utils.Getenv("ROUTER_PASS", commandLineOpts.Password),
-		}
-	case "skyhub2":
-		modem = &skyhub2.Modem{
 			IPAddress: utils.Getenv("ROUTER_IP", commandLineOpts.ModemIP),
 			Stats:     body,
 			FetchTime: fetchTime,

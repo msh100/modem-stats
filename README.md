@@ -1,7 +1,6 @@
 # Modem Statistics Parser
 
-A utility to read and parse channel diagnostics information from DOCSIS and
-VDSL modems.
+A utility to read and parse channel diagnostics information from DOCSIS modems.
 This package is intended to be used within a Telegraf instance to be fed into
 InfluxDB.
 A Prometheus endpoint can also be exposed for collection.
@@ -175,12 +174,6 @@ Ziggo Connectbox:**
  * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.10.1`)
  * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
  * `ROUTER_PASS` or `--password=password` (defaults to `admin`)
-
-**Sky Hub 2:**
- * `ROUTER_TYPE=skyhub2`
- * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.0.1`)
- * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
- * `ROUTER_PASS` or `--password=password` (defaults to `sky`)
 
 **Ubee UBC1318:**
  * `ROUTER_TYPE=ubee`
