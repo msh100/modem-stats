@@ -138,7 +138,7 @@ In most cases, these binaries will be sufficient.
 
 ### Building
 
-If you would like to build the binaries yourself, you will require Go 1.16 (may
+If you would like to build the binaries yourself, you will require Go 1.21 (may
 work with earlier versions, but this is untested).
 
 ```
