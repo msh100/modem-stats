@@ -63,7 +63,7 @@ services:
       - INFLUX_DB=modem-stats
       - PING_TARGETS=1.1.1.1,8.8.8.8,bbc.co.uk
       - ROUTER_TYPE=superhub3
-      - IP_ADDRESS=192.168.100.1
+      - ROUTER_IP=192.168.100.1
     restart: unless-stopped
 ```
 
@@ -158,37 +158,37 @@ Additional information depends on the model.
 **Virgin Media Superhub 3<br/>
 Ziggo Connectbox:**
  * `ROUTER_TYPE=superhub3` or `--modem=superhub3`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
 **Virgin Media Superhub 4:**
 > **:warning: Warning:** Despite this statistics parser being fully functional, after some time the Superhub 4 fails to provide valid statistics until the device is rebooted. This is not an issue with the parser, but is an issue with the Superhub itself. [Issue](https://github.com/msh100/modem-stats/issues/2).
  * `ROUTER_TYPE=superhub4` or `--modem=superhub4`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
 **Virgin Media Superhub 5:**
  * `ROUTER_TYPE=superhub5` or `--modem=superhub5`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
 **Com Hem WiFi Hub C2:**
 (This is likely to work on any Sagemcom DOCSIS modem)
  * `ROUTER_TYPE=comhemc2` or `--modem=comhemc2`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.10.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.10.1`)
  * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
  * `ROUTER_PASS` or `--password=password` (defaults to `admin`)
 
 **Sky Hub 2:**
  * `ROUTER_TYPE=skyhub2`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.0.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.0.1`)
  * `ROUTER_USER` or `--username=admin` (defaults to `admin`)
  * `ROUTER_PASS` or `--password=password` (defaults to `sky`)
 
 **Ubee UBC1318:**
  * `ROUTER_TYPE=ubee`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
 
 **Technicolor TC4400:**
  * `ROUTER_TYPE=tc4400`
- * `IP_ADDRESS` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
+ * `ROUTER_IP` or `--ip=x.x.x.x` (defaults to `192.168.100.1`)
  * `ROUTER_USER` or `--username=user` (defaults to `user`)
  * `ROUTER_PASS` or `--password=password` (defaults to `password`)
 
@@ -196,11 +196,11 @@ Ziggo Connectbox:**
 ### Example Usage
 
 ```
-$ ROUTER_TYPE=superhub3 IP_ADDRESS=192.168.100.1 go run sh-stats/*.go
+$ ROUTER_TYPE=superhub3 ROUTER_IP=192.168.100.1 go run main.go
 downstream,channel=3,id=10,modulation=QAM256,scheme=SC-QAM frequency=211000000,snr=403,power=71,prerserr=300,postrserr=0
 downstream,channel=9,id=16,modulation=QAM256,scheme=SC-QAM frequency=259000000,snr=409,power=68,prerserr=72,postrserr=0
 ...
-$ go run sh-stats/*.go --modem=superhub3 --ip=192.168.100.1
+$ go run main.go --modem=superhub3 --ip=192.168.100.1
 downstream,channel=3,id=10,modulation=QAM256,scheme=SC-QAM frequency=211000000,snr=403,power=71,prerserr=300,postrserr=0
 downstream,channel=9,id=16,modulation=QAM256,scheme=SC-QAM frequency=259000000,snr=409,power=68,prerserr=72,postrserr=0
 ...
