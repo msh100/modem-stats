@@ -30,7 +30,7 @@ func (tc4400 *Modem) Type() string {
 
 func (tc4400 *Modem) apiAddress() string {
 	if tc4400.IPAddress == "" {
-		tc4400.IPAddress = "192.168.100.1" // TODO: Is this a reasonable default?
+		tc4400.IPAddress = "192.168.100.1"
 	}
 	return fmt.Sprintf("http://%s/cmconnectionstatus.html", tc4400.IPAddress)
 }
@@ -68,7 +68,10 @@ func (tc4400 *Modem) getStats() ([]byte, error) {
 }
 
 func (tc4400 *Modem) ParseStats() (utils.ModemStats, error) {
-	modemStats, _ := tc4400.getStats()
+	modemStats, err := tc4400.getStats()
+	if err != nil {
+		return utils.ModemStats{}, err
+	}
 
 	var downChannels []utils.ModemChannel
 	var upChannels []utils.ModemChannel
