@@ -142,7 +142,7 @@ If you would like to build the binaries yourself, you will require Go 1.21 (may
 work with earlier versions, but this is untested).
 
 ```
-go build -o modem-stats sh-stats/*.go
+go build -o modem-stats main.go
 ```
 
 For other architectures, extra options will need to be provided.
