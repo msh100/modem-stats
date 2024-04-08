@@ -36,9 +36,9 @@ jobs:
       run: |
         OBJECT_SUFFIX="${{ env.object_suffix }}"
         mkdir output/
-        go build -o "output/modem-stats${OBJECT_SUFFIX}.x86" main.go
-        GOARCH=arm GOARM=5 go build -o "output/modem-stats${OBJECT_SUFFIX}.arm5" main.go
-        GOOS=darwin GOARCH=arm64 go build -o "output/modem-stats${OBJECT_SUFFIX}.macos-arm64" main.go
+        CGO_ENABLED=0 go build -o "output/modem-stats${OBJECT_SUFFIX}.x86" -ldflags '-extldflags "-static"' main.go
+        CGO_ENABLED=0 GOARCH=arm GOARM=5 go build -o "output/modem-stats${OBJECT_SUFFIX}.arm5" -ldflags '-extldflags "-static"' main.go
+        CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o "output/modem-stats${OBJECT_SUFFIX}.macos-arm64" -ldflags '-extldflags "-static"' main.go
 
     - name: Push binaries to B2
       uses: jakejarvis/s3-sync-action@master
