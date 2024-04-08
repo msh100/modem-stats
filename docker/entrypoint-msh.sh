@@ -35,8 +35,6 @@ export FETCH_INTERVAL
 export INFLUX_URL
 export INFLUX_DB
 
-cat /etc/telegraf.d/telegraf.conf
-
 exec telegraf \
     --config "/etc/telegraf.d/telegraf.conf" \
     --config-directory "/etc/telegraf.d/"
