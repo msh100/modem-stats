@@ -32,7 +32,7 @@ Each channel is made up of:
  - `power` - Power in dBmV
  - `modulation` - Channel modulation (map below)
  - `snr` - Signal to Noise ratio in dB
- - `rxMer` - Signal to Noise ratio in dB (again)
+ - `rxMer` - Signal to Noise ratio in dB (used by DOCSIS 3.1 channels)
  - `correctedErrors` - Count of corrected codewords
  - `uncorrectedErrors` - Count of uncorrectable codewords
  - `lockStatus` - (Bool) Channel locked
@@ -53,13 +53,13 @@ For example:
 }
 ```
 
+The returned value for power is 10x greater on DOCSIS 3.1 channels than on
+DOCSIS 3.0 channels, therefore they need to be normalised.
+
 **Note:** It has been noted that the corrected count is displayed as "Pre RS
 errors" in the Superhub UI, and uncorrected is displayed as "post RS errors".
 The number for post was higher than pre which didn't make sense and I assume
 that the Superhub 5 displays this data incorrectly.
-
-**Note:** It's still unknown how the Superhub 5 displays DOCSIS 3.1 channels
-differently to 3.0.
 
 
 ### Upstream
@@ -96,6 +96,9 @@ For example:
   "channelType": "atdma"
 }
 ```
+
+The returned value for power is 10x greater on DOCSIS 3.1 channels than on
+DOCSIS 3.0 channels, therefore they need to be normalised.
 
 
 ### Service Flows

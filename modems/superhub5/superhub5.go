@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
-	"strconv"
 	"time"
 
 	jsonpatch "github.com/evanphx/json-patch"
@@ -34,20 +33,23 @@ func (sh5 *Modem) apiAddress() string {
 }
 
 type dsChannel struct {
-	ID         int     `json:"channelId"`
-	Frequency  int     `json:"frequency"`
-	Power      float32 `json:"power"`
-	Modulation string  `json:"modulation"`
-	SNR        int     `json:"snr"`
-	PreRS      int     `json:"correctedErrors"`
-	PostRS     int     `json:"uncorrectedErrors"`
+	ID          int     `json:"channelId"`
+	Frequency   int     `json:"frequency"`
+	Power       float32 `json:"power"`
+	Modulation  string  `json:"modulation"`
+	SNR         int     `json:"snr"`
+	PreRS       int     `json:"correctedErrors"`
+	PostRS      int     `json:"uncorrectedErrors"`
+	ChannelType string  `json:"channelType"`
+	RxMer       int     `json:"rxMer"`
 }
 
 type usChannel struct {
-	ID         int     `json:"channelId"`
-	Frequency  int     `json:"frequency"`
-	Power      float32 `json:"power"`
-	Modulation string  `json:"modulation"`
+	ID          int     `json:"channelId"`
+	Frequency   int     `json:"frequency"`
+	Power       float32 `json:"power"`
+	Modulation  string  `json:"modulation"`
+	ChannelType string  `json:"channelType"`
 }
 
 type serviceFlow struct {
@@ -103,30 +105,30 @@ func (sh5 *Modem) ParseStats() (utils.ModemStats, error) {
 	json.Unmarshal(sh5.Stats, &results)
 
 	for index, downstream := range results.Downstream.Channels {
-		// Note: I have yet to see a D3.1 channel on a Superhub 5 and therefore
-		// am not certain this logic even works. It's likely this is broken and
-		// needs fixing.
-		//
-		// As this comes from a map that doesn't guarentee to be in the format
-		// of QAM 256, this will probably break.
 		re := regexp.MustCompile("[0-9]+")
 		qamSize := re.FindString(downstream.Modulation)
-		qamSizeInt, err := strconv.Atoi(qamSize)
-		if err != nil {
-			panic(err)
-		}
 
-		scheme := "SC-QAM"
-		if qamSizeInt > 256 {
+		powerInt := int(downstream.Power * 10)
+		snr := downstream.SNR * 10
+
+		var scheme string
+		if downstream.ChannelType == "sc_qam" {
+			scheme = "SC-QAM"
+		} else if downstream.ChannelType == "ofdm" {
 			scheme = "OFDM"
+			powerInt = int(downstream.Power)
+			snr = downstream.RxMer
+		} else {
+			fmt.Println("Unknown channel scheme:", downstream.ChannelType)
+			continue
 		}
 
 		downChannels = append(downChannels, utils.ModemChannel{
 			ChannelID:  downstream.ID,
 			Channel:    index + 1,
 			Frequency:  downstream.Frequency,
-			Snr:        downstream.SNR * 10,
-			Power:      int(downstream.Power * 10),
+			Snr:        snr,
+			Power:      powerInt,
 			Prerserr:   downstream.PreRS + downstream.PostRS,
 			Postrserr:  downstream.PostRS,
 			Modulation: "QAM" + qamSize,
@@ -135,11 +137,25 @@ func (sh5 *Modem) ParseStats() (utils.ModemStats, error) {
 	}
 
 	for index, upstream := range results.Upstream.Channels {
+		powerInt := int(upstream.Power * 10)
+
+		var scheme string
+		if upstream.ChannelType == "atdma" {
+			scheme = "ATDMA"
+		} else if upstream.ChannelType == "ofdma" {
+			scheme = "OFDMA"
+			powerInt = int(upstream.Power)
+		} else {
+			fmt.Println("Unknown channel scheme:", upstream.ChannelType)
+			continue
+		}
+
 		upChannels = append(upChannels, utils.ModemChannel{
 			ChannelID: upstream.ID,
 			Channel:   index + 1,
 			Frequency: upstream.Frequency,
-			Power:     int(upstream.Power * 10),
+			Power:     powerInt,
+			Scheme:    scheme,
 		})
 	}
 
